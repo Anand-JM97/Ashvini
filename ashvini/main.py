@@ -21,3 +21,10 @@ omega_b=0.0484
 omega_L=0.692
 alpha=0.79
 pi=math.pi
+
+def evolve_galaxies():
+    """This will be the main function. We should have this call star formation, supernovae feedback, and such defined
+    in the other files. Ideally this should be the only the function that is defined in this file.
+    """
+
+    return 1
