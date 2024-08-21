@@ -50,6 +50,14 @@ def s(x,y):
     return s_val
 
 def M_c(z):
+    """
+    Characteristic mass scale for reionization (Okamoto et al. 2008).
+    Args:
+        z (float): Parameter for redshift.
+
+    Returns:
+        Float: The characteristic mass scale at which the baryon fraction is suppressed by a factor of two, compared to the universal value, because of background UV.
+    """ 
     M_val=1.69*(10**10)*(np.exp(-0.63*z)/(1+np.exp((z/beta)**gamma)))
     return M_val
 
