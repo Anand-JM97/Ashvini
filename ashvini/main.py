@@ -12,6 +12,8 @@ from astropy.cosmology import units as cu
 from astropy.cosmology import z_at_value
 import astropy.units as u
 
+import reionization as rei
+
 H_0=cosmo.H0 #in km / (Mpc s)
 H_0=H_0.to(u.Gyr**(-1)) #in 1/Gyr
 
@@ -21,7 +23,7 @@ omega_m=cosmo.Om0
 omega_b=cosmo.Ob0
 omega_L=cosmo.Ode0
 
-
+#s
 
 alfa=0.79
 pi=np.pi
@@ -107,30 +109,6 @@ def H(z):
     H=H_0*np.sqrt(omega_m*(1+z)**3+omega_L)
     return H
 
-def M_c(z):
-    """
-    Characteristic mass scale for reionization (Okamoto et al. 2008).
-    Args:
-        z (float): Parameter for redshift.
-
-    Returns:
-        Float: The characteristic mass scale at which the baryon fraction is suppressed by a factor of two, compared to the universal value, because of background UV.
-    """
-    M_val=1.69*(10**10)*(np.exp(-0.63*z)/(1+np.exp((z/beta)**gamma)))
-    return M_val
-
-def s(x,y):
-    """
-    A step function used in the expression for accretion suppression due to UV background.
-    Args:
-        x, y (float): Two parameters representing any physical quantity.
-
-    Returns:
-        The value of the function s(x,y) based on the argument of the parameters.
-    """
-    s_val=(1+(2**(y/3)-1)*(x**(-y)))**(-3/y)
-    return s_val
-
 def delta_c(z):
     """
     
@@ -155,24 +133,6 @@ def m_h(z,m_h0_value):
     m_h_val=m_h0_value*np.exp(-alfa*(z-z_0))
     return m_h_val
 
-def mu_c(z,m_halo):
-    mu=m_h(z,m_halo)/M_c(z)
-    return mu
-
-def X(z,m_halo):
-    M_omega=(M_c(z)/m_h(z,m_halo))**(omega)
-    X_val=(3*c_omega*M_omega)/(1+c_omega*M_omega)
-    return X_val
-
-def epsilon(z):
-    part2=(gamma*(z**(gamma-1))/(beta**gamma))*(np.exp((z/beta)**gamma))/((1+np.exp((z/beta)**gamma))**2)
-    epsilon=(0.63)/(1+np.exp((z/beta)**gamma))+part2
-    return epsilon
-
-def epsilon2(z):
-    part2=(gamma*(z**(gamma-1))/beta**gamma)*(np.exp((z/beta)**gamma))/(1+np.exp((z/beta)**gamma))
-    epsilon2_val=(0.63)+part2
-    return epsilon2_val
 
 def g(z,m_halo):
     m_vir=m_h(z,m_halo)
@@ -201,17 +161,8 @@ def m_dot_wind(m_gas,z,m_halo,epsilon_p):
     m_dot_wind_val=eta(z,m_halo,epsilon_p)*m_dot_star(m_gas,z,m_halo)
     return m_dot_wind_val
 
-def epsilon_uv_1(z_val,m_h0_val):
-    if (z_val > 10):
-        value=1
-    else:
-        value=s(mu_c(z_val,m_h0_val),omega)*((1+X(z_val,m_h0_val))-2*epsilon(z_val)*m_h(z_val,m_h0_val)*X(z_val,m_h0_val)*(1+z_val)*H(z_val)/mdot_h(z_val,m_h0_val))
-    if (value < 0):
-        value=0
-    return value
-
 def m_dot_cg(z,m_h0_val):
-    m_dot_cg_val=(omega_b/omega_m)*mdot_h(z,m_h0_val)*epsilon_uv_1(z,m_h0_val)
+    m_dot_cg_val=(omega_b/omega_m)*mdot_h(z,m_h0_val)*rei.epsilon_uv(z,m_h0_val)
     return m_dot_cg_val
 
 def m_dot_cg_2(z,m_h0_val):
@@ -226,7 +177,6 @@ def diff_eqns_1(t,r,m_h0_val,e_ff,gamma_ff):
     
     f_m_g=m_dot_cg(z_val,m_h0_val)-(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
     f_m_star=(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
-    
         
     return(np.array([f_m_g,f_m_star]))
 
@@ -239,7 +189,6 @@ def diff_eqns_2(t,r,m_d_s_d,m_h0_val,e_ff,epsilon_p,gamma_ff):
     f_m_g=m_dot_cg(z_val,m_h0_val)-(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g-eta(z_val,m_h0_val,epsilon_p)*m_d_s_d
     f_m_star=(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
     
-   
     return(np.array([f_m_g,f_m_star]))
 
 def diff_eqns_3(t,r,m_h0_val,e_ff,gamma_ff):
@@ -345,7 +294,6 @@ def diff_eqn_eq_zgas_2(t,y,m_g,m_h0_val,e_ff,gamma_ff,epsilon_p):        #diff_e
     z_val=z(t)
     f_m_star=(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
     
-    
     f_m_z_gas=(z_igm*m_dot_cg(z_val,m_h0_val))-(y*(1-R)*f_m_star/m_g)+(y_z*f_m_star)-(eta(z_val,m_h0_val,epsilon_p)*y*f_m_star/m_g)
     return f_m_z_gas
 
@@ -362,7 +310,6 @@ def diff_eqn_eq_zgas_4(t,y,m_g,m_h0_val,e_ff,gamma_ff,epsilon_p):        #diff_e
     
     f_m_z_gas=(z_igm*m_dot_cg_2(z_val,m_h0_val))-(y*(1-R)*f_m_star/m_g)+(y_z*f_m_star)-(eta(z_val,m_h0_val,epsilon_p)*y*f_m_star/m_g)
     return f_m_z_gas
-
 
 def diff_eqn_zstar_1(t,y):
     f_m_z_star=0.0
