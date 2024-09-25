@@ -12,6 +12,8 @@ from astropy.cosmology import units as cu
 from astropy.cosmology import z_at_value
 import astropy.units as u
 
+from scipy.integrate import solve_ivp
+
 import reionization as rei
 
 H_0=cosmo.H0 #in km / (Mpc s)
@@ -35,14 +37,38 @@ plt.rcParams['figure.dpi'] = 300
 #z=z_at_value(cosmo.age,t)
 
 def t(z):
+    """
+    Function to convert redshift to cosmic time.
+    Args:
+        z (float): Parameter representing redshift.
+
+    Returns:
+        Float: The comsic time value.
+    """
     t_val=cosmo.age(z)
     return t_val
 
 def z(t):
+    """
+    Function to convert cosmic time to redshift.
+    Args:
+        t (float): Parameter representing cosmic time.
+
+    Returns:
+        Float: The redshift value.
+    """
     z_val=z_at_value(cosmo.age,t)
     return z_val
 
 def H(z):
+    """
+    Hubble function.
+    Args:
+        z (float): Parameter for redshift.
+
+    Returns:
+        Float: The value of the Hubble constant for the redshift value entered as the argument.
+    """
     H=cosmo.H(z)
     H=H.to(u.Gyr**(-1)) #in 1/Gyr
     return H
@@ -58,15 +84,8 @@ def evolve_galaxies():
 #Initialization for the halo mass evolution
 m_h0=np.logspace(7,10,num=20)
 
+#Initialization for cosmic time 
 
-
-#Quantities for suppression due to UV heating 
-
-z_rei=7
-gamma=15
-omega=2
-c_omega=2**(omega/3)-1
-beta=z_rei*((np.log(1.82*(10**3)*np.exp(-0.63*z_rei)-1))**(-1/gamma))
 t0=0.129
 tf=5
 n=25000
@@ -78,42 +97,6 @@ cosmic_time=np.linspace(t0,tf,n)
 z_igm=10**(-3)
 y_z=0.06
 zeta_w=1
-
-def z(t):
-    """
-    Function to convert cosmic time to redshift.
-    Args:
-        t (float): Parameter representing cosmic time.
-
-    Returns:
-        Float: The redshift value
-    """
-    k_val=2/(3*H_0*np.sqrt(omega_m))
-    z_0=25
-    t_0=0.129
-    term_1=1/((1+z_0)**(3/2))
-    z_val=((term_1+(t-t_0)/k_val)**(-2/3))-1
-    return z_val
-
-def H(z):
-    """
-    Hubble function.
-    Args:
-        z (float): Parameter for redshift.
-
-    Returns:
-        Float: The value of the Hubble constant for the redshift value entered as the argument.
-    """
-    H=H_0*np.sqrt(omega_m*(1+z)**3+omega_L)
-    return H
-
-def delta_c(z):
-    """
-    
-    """
-    d=((omega_m*((1+z)**3))/((omega_m*((1+z)**3))+omega_L))-1
-    delta_c_val=18*(pi**2)+(82*d)-(39*(d**2))
-    return delta_c_val
 
 def mdot_h(z,m_h0_value):
     """
@@ -131,13 +114,6 @@ def m_h(z,m_h0_value):
     m_h_val=m_h0_value*np.exp(-alfa*(z-z_0))
     return m_h_val
 
-
-def g(z,m_halo):
-    m_vir=m_h(z,m_halo)
-    c_vir=15*((m_vir/(10**12))**(-0.2))/(1+z)
-    A=np.log(1+c_vir)-(c_vir)/(1+c_vir)
-    g_val=(A/(delta_c(z)*c_vir))**(0.5)
-    return g_val
 
 def t_ff(z,m_halo,gamma_ff):
     t_ff_val=gamma_ff/(H_0*np.sqrt((omega_m*((1+z)**3))+omega_L))
