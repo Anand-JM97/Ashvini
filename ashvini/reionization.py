@@ -5,7 +5,6 @@ Created on Wed Aug 21 12:48:59 2024
 @author: Anand Menon
 """
 
-import matplotlib.pyplot as plt
 import numpy as np
 from astropy.cosmology import Planck15 as cosmo
 from astropy.cosmology import units as cu
@@ -20,9 +19,6 @@ A=0.030
 omega_m=cosmo.Om0
 omega_b=cosmo.Ob0
 omega_L=cosmo.Ode0
-
-alfa=0.79
-pi=np.pi
 
 #PARAMETERS FOR THE MODEL:
 
