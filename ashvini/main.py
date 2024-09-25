@@ -58,6 +58,8 @@ def evolve_galaxies():
 #Initialization for the halo mass evolution
 m_h0=np.logspace(7,10,num=20)
 
+
+
 #Quantities for suppression due to UV heating 
 
 z_rei=7
@@ -70,10 +72,6 @@ tf=5
 n=25000
 h=(tf-t0)/n
 cosmic_time=np.linspace(t0,tf,n)
-
-#Star formation parameters
-
-R=0
 
 #Metallicity parameters
 
@@ -244,7 +242,7 @@ def diff_eqn_zgas_1(t,y,m_h0_val):  #diff_eqns_1
 def diff_eqn_zgas_2(t,y,m_g,m_h0_val,e_ff,gamma_ff):    #diff_eqns_1
     z_val=z(t)
     
-    f_m_z_gas=(z_igm*m_dot_cg(z_val,m_h0_val))-((y/m_g)*(1-R)*(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g)
+    f_m_z_gas=(z_igm*m_dot_cg(z_val,m_h0_val))-((y/m_g)*(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g)
     return f_m_z_gas
 
 def diff_eqn_zgas_3(t,y,m_h0_val,m_d_s_d):      #diff_eqns_2
@@ -256,7 +254,7 @@ def diff_eqn_zgas_3(t,y,m_h0_val,m_d_s_d):      #diff_eqns_2
 def diff_eqn_zgas_4(t,y,m_g,m_h0_val,m_d_s_d,e_ff,gamma_ff,epsilon_p):      #diff_eqns_2
     z_val=z(t)
     
-    f_m_z_gas=(z_igm*m_dot_cg(z_val,m_h0_val))-(y*(1-R)*(e_ff/t_ff(z_val,m_h0_val,gamma_ff)))+(y_z*m_d_s_d)-(eta(z_val,m_h0_val,epsilon_p)*(y/m_g)*m_d_s_d)
+    f_m_z_gas=(z_igm*m_dot_cg(z_val,m_h0_val))-(y*(e_ff/t_ff(z_val,m_h0_val,gamma_ff)))+(y_z*m_d_s_d)-(eta(z_val,m_h0_val,epsilon_p)*(y/m_g)*m_d_s_d)
     return f_m_z_gas
 
 def diff_eqn_zgas_5(t,y,m_h0_val):       #diff_eqns_3
@@ -268,7 +266,7 @@ def diff_eqn_zgas_5(t,y,m_h0_val):       #diff_eqns_3
 def diff_eqn_zgas_6(t,y,m_g,m_h0_val,e_ff,gamma_ff):      #diff_eqns_3
     z_val=z(t)
     
-    f_m_z_gas=(z_igm*m_dot_cg_2(z_val,m_h0_val))-((y/m_g)*(1-R)*(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g)
+    f_m_z_gas=(z_igm*m_dot_cg_2(z_val,m_h0_val))-((y/m_g)*(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g)
     return f_m_z_gas
 
 def diff_eqn_zgas_7(t,y,m_h0_val,m_d_s_d):       #diff_eqns_4
@@ -280,7 +278,7 @@ def diff_eqn_zgas_7(t,y,m_h0_val,m_d_s_d):       #diff_eqns_4
 def diff_eqn_zgas_8(t,y,m_g,m_h0_val,m_d_s_d,e_ff,gamma_ff,epsilon_p):       #diff_eqns_4
     z_val=z(t)
     
-    f_m_z_gas=(z_igm*m_dot_cg_2(z_val,m_h0_val))-(y*(1-R)*(e_ff/t_ff(z_val,m_h0_val,gamma_ff)))+(y_z*m_d_s_d)-(eta(z_val,m_h0_val,epsilon_p)*(y/m_g)*m_d_s_d)
+    f_m_z_gas=(z_igm*m_dot_cg_2(z_val,m_h0_val))-(y*(e_ff/t_ff(z_val,m_h0_val,gamma_ff)))+(y_z*m_d_s_d)-(eta(z_val,m_h0_val,epsilon_p)*(y/m_g)*m_d_s_d)
     return f_m_z_gas
 
 def diff_eqn_eq_zgas_1(t,y,m_g,m_h0_val,e_ff,gamma_ff):       #diff_eqns_eq_1
@@ -294,7 +292,7 @@ def diff_eqn_eq_zgas_2(t,y,m_g,m_h0_val,e_ff,gamma_ff,epsilon_p):        #diff_e
     z_val=z(t)
     f_m_star=(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
     
-    f_m_z_gas=(z_igm*m_dot_cg(z_val,m_h0_val))-(y*(1-R)*f_m_star/m_g)+(y_z*f_m_star)-(eta(z_val,m_h0_val,epsilon_p)*y*f_m_star/m_g)
+    f_m_z_gas=(z_igm*m_dot_cg(z_val,m_h0_val))-(y*f_m_star/m_g)+(y_z*f_m_star)-(eta(z_val,m_h0_val,epsilon_p)*y*f_m_star/m_g)
     return f_m_z_gas
 
 def diff_eqn_eq_zgas_3(t,y,m_g,m_h0_val,e_ff,gamma_ff):       #diff_eqns_eq_2
@@ -308,7 +306,7 @@ def diff_eqn_eq_zgas_4(t,y,m_g,m_h0_val,e_ff,gamma_ff,epsilon_p):        #diff_e
     z_val=z(t)
     f_m_star=(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
     
-    f_m_z_gas=(z_igm*m_dot_cg_2(z_val,m_h0_val))-(y*(1-R)*f_m_star/m_g)+(y_z*f_m_star)-(eta(z_val,m_h0_val,epsilon_p)*y*f_m_star/m_g)
+    f_m_z_gas=(z_igm*m_dot_cg_2(z_val,m_h0_val))-(y*f_m_star/m_g)+(y_z*f_m_star)-(eta(z_val,m_h0_val,epsilon_p)*y*f_m_star/m_g)
     return f_m_z_gas
 
 def diff_eqn_zstar_1(t,y):
@@ -317,7 +315,7 @@ def diff_eqn_zstar_1(t,y):
 
 def diff_eqn_zstar_2(t,y,m_z_g,m_h0_val,e_ff,gamma_ff):
     z_val=z(t)
-    f_m_z_star=(m_z_g)*(1-R)*(e_ff/t_ff(z_val,m_h0_val,gamma_ff))
+    f_m_z_star=(m_z_g)*(e_ff/t_ff(z_val,m_h0_val,gamma_ff))
     return f_m_z_star
 
 
