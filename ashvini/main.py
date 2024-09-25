@@ -15,6 +15,7 @@ import astropy.units as u
 from scipy.integrate import solve_ivp
 
 import reionization as rei
+from io import mdot_h,m_h
 
 H_0=cosmo.H0 #in km / (Mpc s)
 H_0=H_0.to(u.Gyr**(-1)) #in 1/Gyr
@@ -25,9 +26,6 @@ omega_m=cosmo.Om0
 omega_b=cosmo.Ob0
 omega_L=cosmo.Ode0
 
-#s
-
-alfa=0.79
 pi=np.pi
 
 plt.rcParams['figure.dpi'] = 300
@@ -81,9 +79,6 @@ def evolve_galaxies():
     return 1
 
 
-#Initialization for the halo mass evolution
-m_h0=np.logspace(7,10,num=20)
-
 #Initialization for cosmic time 
 
 t0=0.129
@@ -97,22 +92,6 @@ cosmic_time=np.linspace(t0,tf,n)
 z_igm=10**(-3)
 y_z=0.06
 zeta_w=1
-
-def mdot_h(z,m_h0_value):
-    """
-    Function that tracks the Halo growth rate.
-    Args:
-        z (float): Redshift parameter.
-        m_h0_value (float): 
-    """
-    z_0=5
-    halo_rate=A*m_h0_value*np.exp(-alfa*(z-z_0))*(1+z)**(5/2)
-    return halo_rate
-
-def m_h(z,m_h0_value):
-    z_0=5
-    m_h_val=m_h0_value*np.exp(-alfa*(z-z_0))
-    return m_h_val
 
 
 def t_ff(z,m_halo,gamma_ff):
