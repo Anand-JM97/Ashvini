@@ -17,6 +17,7 @@ from scipy.integrate import solve_ivp
 from io import mdot_h,m_h
 import reionization as rei
 import star_formation as sf
+import supernovae_feedback as snw
 
 H_0=cosmo.H0 #in km / (Mpc s)
 H_0=H_0.to(u.Gyr**(-1)) #in 1/Gyr
