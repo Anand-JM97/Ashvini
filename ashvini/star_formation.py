@@ -25,10 +25,26 @@ e_ff=0.015
 #z=z_at_value(cosmo.age,t) --For testing age of the Universe to redshift conversion
 
 def t(z):
+    """
+    Function to convert redshift to cosmic time.
+    Args:
+        z (float): Parameter representing redshift.
+
+    Returns:
+        Float: The comsic time value.
+    """
     t_val=cosmo.age(z)
     return t_val
 
 def z(t):
+    """
+    Function to convert cosmic time to redshift.
+    Args:
+        t (float): Parameter representing cosmic time.
+
+    Returns:
+        Float: The redshift value.
+    """
     z_val=z_at_value(cosmo.age,t)
     return z_val
 
