@@ -19,6 +19,8 @@ alfa=0.79
 
 z_0=5
 
+#HALO MASS ANALYTICAL FUNCTIONS
+
 def mdot_h(z,m_h0_value):
     """
     Function that tracks the Halo growth rate.
@@ -38,3 +40,7 @@ def m_h(z,m_h0_value):
     """
     m_h_val=m_h0_value*np.exp(-alfa*(z-z_0))
     return m_h_val
+
+#MERGER TREE FUNCTIONS
+
+
