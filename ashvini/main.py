@@ -2,6 +2,8 @@
 """
 Created on Sun Jul 21 11:47:28 2024
 
+Main code with evolve galaxy function
+
 @author: Anand Menon
 """
 
@@ -96,26 +98,6 @@ y_z=0.06
 zeta_w=1
 
 
-def t_ff(z,m_halo,gamma_ff):
-    t_ff_val=gamma_ff/(H_0*np.sqrt((omega_m*((1+z)**3))+omega_L))
-    return t_ff_val
-    
-def eta(z,m_halo,epsilon_p):
-    pi_fid=1
-    #epsilon_p=5
-    
-    eta_p=epsilon_p*pi_fid*(((10**11.5)/m_h(z,m_halo))**(1/3))*((9/(1+z))**(1/2))
-
-    return eta_p
-
-def m_dot_star(m_gas,z,m_halo,e_ff,gamma_ff):
-    m_dot_star_val=(e_ff*m_gas/t_ff(z,m_halo,gamma_ff))
-    return m_dot_star_val
-
-def m_dot_wind(m_gas,z,m_halo,epsilon_p):
-    m_dot_wind_val=eta(z,m_halo,epsilon_p)*m_dot_star(m_gas,z,m_halo)
-    return m_dot_wind_val
-
 def m_dot_cg(z,m_h0_val):
     m_dot_cg_val=(omega_b/omega_m)*mdot_h(z,m_h0_val)*rei.epsilon_uv(z,m_h0_val)
     return m_dot_cg_val
@@ -130,8 +112,8 @@ def diff_eqns_1(t,r,m_h0_val,e_ff,gamma_ff):
     
     z_val=z(t)
     
-    f_m_g=m_dot_cg(z_val,m_h0_val)-(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
-    f_m_star=(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
+    f_m_g=m_dot_cg(z_val,m_h0_val)-(e_ff/sf.t_ff(z_val))*m_g
+    f_m_star=(e_ff/sf.t_ff(z_val))*m_g
         
     return(np.array([f_m_g,f_m_star]))
 
@@ -141,8 +123,8 @@ def diff_eqns_2(t,r,m_d_s_d,m_h0_val,e_ff,epsilon_p,gamma_ff):
     
     z_val=z(t)
     
-    f_m_g=m_dot_cg(z_val,m_h0_val)-(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g-eta(z_val,m_h0_val,epsilon_p)*m_d_s_d
-    f_m_star=(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
+    f_m_g=m_dot_cg(z_val,m_h0_val)-(e_ff/sf.t_ff(z_val))*m_g-snw.eta(z_val,m_h0_val)*m_d_s_d
+    f_m_star=(e_ff/sf.t_ff(z_val))*m_g
     
     return(np.array([f_m_g,f_m_star]))
 
@@ -152,8 +134,8 @@ def diff_eqns_3(t,r,m_h0_val,e_ff,gamma_ff):
     
     z_val=z(t)
     
-    f_m_g=m_dot_cg_2(z_val,m_h0_val)-(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
-    f_m_star=(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
+    f_m_g=m_dot_cg_2(z_val,m_h0_val)-(e_ff/sf.t_ff(z_val))*m_g
+    f_m_star=(e_ff/sf.t_ff(z_val))*m_g
         
     return(np.array([f_m_g,f_m_star]))
 
@@ -163,8 +145,8 @@ def diff_eqns_4(t,r,m_d_s_d,m_h0_val,e_ff,epsilon_p,gamma_ff):
     
     z_val=z(t)
     
-    f_m_g=m_dot_cg_2(z_val,m_h0_val)-(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g-eta(z_val,m_h0_val,epsilon_p)*m_d_s_d
-    f_m_star=(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
+    f_m_g=m_dot_cg_2(z_val,m_h0_val)-(e_ff/sf.t_ff(z_val))*m_g-snw.eta(z_val,m_h0_val)*m_d_s_d
+    f_m_star=(e_ff/sf.t_ff(z_val))*m_g
         
     return(np.array([f_m_g,f_m_star]))
 
@@ -174,8 +156,8 @@ def diff_eqns_eq_1(t,r,m_h0_val,e_ff,epsilon_p,gamma_ff):
     
     z_val=z(t)
 
-    f_m_g=m_dot_cg(z_val,m_h0_val)-(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g-eta(z_val,m_h0_val,epsilon_p)*(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
-    f_m_star=(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
+    f_m_g=m_dot_cg(z_val,m_h0_val)-(e_ff/sf.t_ff(z_val))*m_g-snw.eta(z_val,m_h0_val)*(e_ff/sf.t_ff(z_val))*m_g
+    f_m_star=(e_ff/sf.t_ff(z_val))*m_g
             
     return(np.array([f_m_g,f_m_star]))    
 
@@ -185,8 +167,8 @@ def diff_eqns_eq_2(t,r,m_h0_val,e_ff,epsilon_p,gamma_ff):
     
     z_val=z(t)
 
-    f_m_g=m_dot_cg_2(z_val,m_h0_val)-(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g-eta(z_val,m_h0_val,epsilon_p)*(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
-    f_m_star=(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
+    f_m_g=m_dot_cg_2(z_val,m_h0_val)-(e_ff/sf.t_ff(z_val))*m_g-snw.eta(z_val,m_h0_val)*(e_ff/sf.t_ff(z_val))*m_g
+    f_m_star=(e_ff/sf.t_ff(z_val))*m_g
     
     return(np.array([f_m_g,f_m_star]))    
 
@@ -199,7 +181,7 @@ def diff_eqn_zgas_1(t,y,m_h0_val):  #diff_eqns_1
 def diff_eqn_zgas_2(t,y,m_g,m_h0_val,e_ff,gamma_ff):    #diff_eqns_1
     z_val=z(t)
     
-    f_m_z_gas=(z_igm*m_dot_cg(z_val,m_h0_val))-((y/m_g)*(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g)
+    f_m_z_gas=(z_igm*m_dot_cg(z_val,m_h0_val))-((y/m_g)*(e_ff/sf.t_ff(z_val))*m_g)
     return f_m_z_gas
 
 def diff_eqn_zgas_3(t,y,m_h0_val,m_d_s_d):      #diff_eqns_2
@@ -211,7 +193,7 @@ def diff_eqn_zgas_3(t,y,m_h0_val,m_d_s_d):      #diff_eqns_2
 def diff_eqn_zgas_4(t,y,m_g,m_h0_val,m_d_s_d,e_ff,gamma_ff,epsilon_p):      #diff_eqns_2
     z_val=z(t)
     
-    f_m_z_gas=(z_igm*m_dot_cg(z_val,m_h0_val))-(y*(e_ff/t_ff(z_val,m_h0_val,gamma_ff)))+(y_z*m_d_s_d)-(eta(z_val,m_h0_val,epsilon_p)*(y/m_g)*m_d_s_d)
+    f_m_z_gas=(z_igm*m_dot_cg(z_val,m_h0_val))-(y*(e_ff/sf.t_ff(z_val)))+(y_z*m_d_s_d)-(snw.eta(z_val,m_h0_val)*(y/m_g)*m_d_s_d)
     return f_m_z_gas
 
 def diff_eqn_zgas_5(t,y,m_h0_val):       #diff_eqns_3
@@ -223,7 +205,7 @@ def diff_eqn_zgas_5(t,y,m_h0_val):       #diff_eqns_3
 def diff_eqn_zgas_6(t,y,m_g,m_h0_val,e_ff,gamma_ff):      #diff_eqns_3
     z_val=z(t)
     
-    f_m_z_gas=(z_igm*m_dot_cg_2(z_val,m_h0_val))-((y/m_g)*(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g)
+    f_m_z_gas=(z_igm*m_dot_cg_2(z_val,m_h0_val))-((y/m_g)*(e_ff/sf.t_ff(z_val))*m_g)
     return f_m_z_gas
 
 def diff_eqn_zgas_7(t,y,m_h0_val,m_d_s_d):       #diff_eqns_4
@@ -235,35 +217,35 @@ def diff_eqn_zgas_7(t,y,m_h0_val,m_d_s_d):       #diff_eqns_4
 def diff_eqn_zgas_8(t,y,m_g,m_h0_val,m_d_s_d,e_ff,gamma_ff,epsilon_p):       #diff_eqns_4
     z_val=z(t)
     
-    f_m_z_gas=(z_igm*m_dot_cg_2(z_val,m_h0_val))-(y*(e_ff/t_ff(z_val,m_h0_val,gamma_ff)))+(y_z*m_d_s_d)-(eta(z_val,m_h0_val,epsilon_p)*(y/m_g)*m_d_s_d)
+    f_m_z_gas=(z_igm*m_dot_cg_2(z_val,m_h0_val))-(y*(e_ff/sf.t_ff(z_val)))+(y_z*m_d_s_d)-(snw.eta(z_val,m_h0_val)*(y/m_g)*m_d_s_d)
     return f_m_z_gas
 
 def diff_eqn_eq_zgas_1(t,y,m_g,m_h0_val,e_ff,gamma_ff):       #diff_eqns_eq_1
     z_val=z(t)
-    f_m_star=(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
+    f_m_star=(e_ff/sf.t_ff(z_val))*m_g
     
     f_m_z_gas=(z_igm*m_dot_cg(z_val,m_h0_val))+(y_z*f_m_star)
     return f_m_z_gas
     
 def diff_eqn_eq_zgas_2(t,y,m_g,m_h0_val,e_ff,gamma_ff,epsilon_p):        #diff_eqns_eq_1
     z_val=z(t)
-    f_m_star=(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
+    f_m_star=(e_ff/sf.t_ff(z_val))*m_g
     
-    f_m_z_gas=(z_igm*m_dot_cg(z_val,m_h0_val))-(y*f_m_star/m_g)+(y_z*f_m_star)-(eta(z_val,m_h0_val,epsilon_p)*y*f_m_star/m_g)
+    f_m_z_gas=(z_igm*m_dot_cg(z_val,m_h0_val))-(y*f_m_star/m_g)+(y_z*f_m_star)-(snw.eta(z_val,m_h0_val)*y*f_m_star/m_g)
     return f_m_z_gas
 
 def diff_eqn_eq_zgas_3(t,y,m_g,m_h0_val,e_ff,gamma_ff):       #diff_eqns_eq_2
     z_val=z(t)
-    f_m_star=(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
+    f_m_star=(e_ff/sf.t_ff(z_val))*m_g
     
     f_m_z_gas=(z_igm*m_dot_cg_2(z_val,m_h0_val))+(y_z*f_m_star)
     return f_m_z_gas
     
 def diff_eqn_eq_zgas_4(t,y,m_g,m_h0_val,e_ff,gamma_ff,epsilon_p):        #diff_eqns_eq_2
     z_val=z(t)
-    f_m_star=(e_ff/t_ff(z_val,m_h0_val,gamma_ff))*m_g
+    f_m_star=(e_ff/sf.t_ff(z_val))*m_g
     
-    f_m_z_gas=(z_igm*m_dot_cg_2(z_val,m_h0_val))-(y*f_m_star/m_g)+(y_z*f_m_star)-(eta(z_val,m_h0_val,epsilon_p)*y*f_m_star/m_g)
+    f_m_z_gas=(z_igm*m_dot_cg_2(z_val,m_h0_val))-(y*f_m_star/m_g)+(y_z*f_m_star)-(snw.eta(z_val,m_h0_val)*y*f_m_star/m_g)
     return f_m_z_gas
 
 def diff_eqn_zstar_1(t,y):
@@ -272,7 +254,7 @@ def diff_eqn_zstar_1(t,y):
 
 def diff_eqn_zstar_2(t,y,m_z_g,m_h0_val,e_ff,gamma_ff):
     z_val=z(t)
-    f_m_z_star=(m_z_g)*(e_ff/t_ff(z_val,m_h0_val,gamma_ff))
+    f_m_z_star=(m_z_g)*(e_ff/sf.t_ff(z_val))
     return f_m_z_star
 
 
@@ -369,7 +351,7 @@ def delayed_feedback_uv(m_h0_val,e_ff,epsilon_p,gamma_ff):    #DELAYED FEEDBACK 
         if (m_z_star[0] < 0.0):
             m_z_star[0]=0.0
           
-        m_dot_star_val=(e_ff/t_ff(redshift,m_h0_val,gamma_ff))*values[0]
+        m_dot_star_val=(e_ff/sf.t_ff(redshift))*values[0]
         m_dot_star_vals=np.append(m_dot_star_vals,[m_dot_star_val])
         
         m_g_val_1=np.append(m_g_val_1,[values[0]])
@@ -469,7 +451,7 @@ def delayed_feedback(m_h0_val,e_ff,epsilon_p,gamma_ff):    #DELAYED FEEDBACK + N
         if (m_z_star[0] < 0.0):
             m_z_star[0]=0.0
           
-        m_dot_star_val=(e_ff/t_ff(redshift,m_h0_val,gamma_ff))*values[0]
+        m_dot_star_val=(e_ff/sf.t_ff(redshift))*values[0]
         m_dot_star_vals=np.append(m_dot_star_vals,[m_dot_star_val])
         
         m_g_val_1=np.append(m_g_val_1,[values[0]])
