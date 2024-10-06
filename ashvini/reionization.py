@@ -2,6 +2,8 @@
 """
 Created on Wed Aug 21 12:48:59 2024
 
+Code for reionization suppression
+
 @author: Anand Menon
 """
 
@@ -13,8 +15,6 @@ import astropy.units as u
 
 H_0=cosmo.H0 #in km / (Mpc s)
 H_0=H_0.to(u.Gyr**(-1)) #in 1/Gyr
-
-A=0.030
 
 omega_m=cosmo.Om0
 omega_b=cosmo.Ob0
