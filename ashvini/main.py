@@ -20,7 +20,7 @@ from scipy.integrate import solve_ivp
 
 #PACKAGES FROM ASHVINI
 
-from io import mdot_h,m_h
+from io import mdot_h,m_h,redshift
 import reionization as rei
 import star_formation as sf
 import supernovae_feedback as snw
@@ -102,8 +102,8 @@ y_z=0.06
 zeta_w=1
 
 
-def m_dot_cg_with_UV(z,m_h0_val):
-    m_dot_cg_val=(omega_b/omega_m)*mdot_h(z,m_h0_val)*rei.epsilon_uv(z,m_h0_val)
+def m_dot_cg_with_UV(z,m_halo,mdot_halo):
+    m_dot_cg_val=(omega_b/omega_m)*mdot_halo*rei.epsilon_uv(z,m_halo,mdot_halo)
     return m_dot_cg_val
 
 def m_dot_cg_no_UV(z,m_h0_val):
@@ -352,8 +352,7 @@ no=10        #HALO MASS POWER VALUE
 
 uv_choice=input("Do you want to include background UV suppression or not?")
 
-t_d=0.015 #THIS SHOULD BE CHANGED TO USER DEFINED
-
+t_d=0.015 #THIS SHOULD BE CHANGED TO USER DEFINE
 
 #DELAYED FEEDBACK
 
@@ -546,8 +545,12 @@ for i in range(start,stop,1):
     
     tsn=cosmic_time[0]+t_d
 
-    m_dot_cg_val=m_dot_cg(redshift,halo_mass,halo_mass_rate)
-    
+    if (uv_choice == 'Yes' or uv_choice == 'yes'):
+        m_dot_cg_val=m_dot_cg_with_UV(redshift,halo_mass,halo_mass_rate)
+ 
+    elif (uv_choice == 'No' or uv_choice == 'no'):
+        m_dot_cg_val=m_dot_cg_no_UV(redshift,halo_mass,halo_mass_rate)
+
     ini_m_gas_eq=[0.0]
     ini_m_star_eq=[0.0]
 
@@ -583,15 +586,12 @@ for i in range(start,stop,1):
         solution=solve_ivp(diff_eqn_zstar_2,t_span,ini_m_z_star_eq,args=[ini_m_z_gas_eq[0]],max_step=h)
         m_z_s=solution.y[0][len(solution.y[0])-1]
         
-        solution=solve_ivp(diff_eqn_eq_dust_1,t_span,ini_m_dust_eq,args=[ini_m_gas_eq[0]],max_step=h)
-        m_d = solution.y[0][len(solution.y[0])-1]
         
         
         ini_m_gas_eq=[m_g]
         ini_m_star_eq=[m_s]
         ini_m_z_gas_eq=[m_z_g]
         ini_m_z_star_eq=[m_z_s]
-        ini_m_dust_eq=[m_d]
         
         if (ini_m_gas_eq[0] < 0.0):
             ini_m_gas_eq[0]=0.0
