@@ -645,10 +645,11 @@ for i in range(start,stop,1):
                 
     plt.show()
 
-
+#THE PREVIOUS CODE WITH RK45 SOLVING DONE MANUALLY
 
 #DELAYED FEEDBACK MODELS
 
+"""
 
 def delayed_feedback_uv(m_h0_val,e_ff,epsilon_p,gamma_ff):    #DELAYED FEEDBACK + UV
     
@@ -1033,13 +1034,13 @@ for i in range(0,3):
         axs[0,1].semilogy(cosmic_time,m_g_val_2,color=f'{colors[i]}',linewidth=lw,alpha=alpha)
         axs[0,2].semilogy(cosmic_time,m_g_val_3,color=f'{colors[i]}',linewidth=lw,label='$e_{ff}=0.0015$',alpha=alpha)
         axs[0,3].semilogy(cosmic_time,m_g_val_4,color=f'{colors[i]}',linewidth=lw,alpha=alpha)
-    """
+    ""
     elif (i == 3):
         axs[0,0].semilogy(cosmic_time,m_g_val_1,color=f'{colors[i]}',linewidth=lw,alpha=alpha)
         axs[0,1].semilogy(cosmic_time,m_g_val_2,color=f'{colors[i]}',linewidth=lw,alpha=alpha)
         axs[0,2].semilogy(cosmic_time,m_g_val_3,color=f'{colors[i]}',linewidth=lw,alpha=alpha)
         axs[0,3].semilogy(cosmic_time,m_g_val_4,color=f'{colors[i]}',linewidth=lw,label='$m_{h}=10^9M_{\odot}$',alpha=alpha)
-    """
+    ""
     
     axs[1,0].semilogy(cosmic_time,m_star_val_1,color=f'{colors[i]}',linewidth=lw,alpha=alpha)
     axs[2,0].semilogy(cosmic_time,m_z_g_val_1,color=f'{colors[i]}',linewidth=lw,alpha=alpha)
@@ -1108,3 +1109,4 @@ for ax in axs.flat:
 
 plt.show()
 
+"""
