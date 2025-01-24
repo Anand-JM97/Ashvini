@@ -352,6 +352,7 @@ no=10        #HALO MASS POWER VALUE
 
 uv_choice=input("Do you want to include background UV suppression or not?")
 
+t_d=0.015 #THIS SHOULD BE CHANGED TO USER DEFINED
 
 
 #DELAYED FEEDBACK
@@ -449,7 +450,6 @@ for i in range(start,stop,1):
         ini_m_star=[m_s]
         ini_m_z_gas=[m_z_g]
         ini_m_z_star=[m_z_s]
-        ini_m_dust=[m_d]
         
         if (ini_m_gas[0] < 0.0):
             ini_m_gas[0]=0.0
@@ -475,11 +475,8 @@ for i in range(start,stop,1):
             z_star_val=ini_m_z_star[0]/ini_m_star[0]
         
             
-        m_dot_star_val=(e_ff/t_ff(redshift[j]))*ini_m_gas[0]
+        m_dot_star_val=(sf.e_ff/sf.t_ff(redshift[j]))*ini_m_gas[0]
         m_dot_star_vals=np.append(m_dot_star_vals,[m_dot_star_val])
-
-        f_val=f_sigmoid(z_star_val)                 #TEMP
-        f_vals=np.append(f_vals,f_val)              #TEMP
 
         m_g_val_1=np.append(m_g_val_1,ini_m_gas)
         m_star_val_1=np.append(m_star_val_1,ini_m_star)
@@ -490,7 +487,7 @@ for i in range(start,stop,1):
     print(len(m_g_val_1))
     print(m_z_star_val_1)
     
-    '''
+    
     np.savetxt(f"C:/Users/Anand Menon/Documents/ICRAR Stuff/Results/No UV Delay/mh{no}_data/gas/tree_{i}.txt",m_g_val_1,delimiter=' ')
     np.savetxt(f"C:/Users/Anand Menon/Documents/ICRAR Stuff/Results/No UV Delay/mh{no}_data/star/tree_{i}.txt",m_star_val_1,delimiter=' ')
     np.savetxt(f"C:/Users/Anand Menon/Documents/ICRAR Stuff/Results/No UV Delay/mh{no}_data/z_gas/tree_{i}.txt",m_z_g_val_1,delimiter=' ')
@@ -509,18 +506,144 @@ for i in range(start,stop,1):
     plt.semilogy(cosmic_time,m_dust_val_1,label='Dust mass')
     
     plt.ylim(10**-3,10**10)
-    '''
-    plt.plot(cosmic_time,f_vals,label='Stellar metallicity fraction')
     
-#plt.legend() 
-plt.ylim(0.2,0.8)
-plt.xlim(0.18,1.2)   
+    plt.show()
 
-plt.xlabel('Cosmic Time')
-plt.ylabel('f($z_\star$)')
+#INSTANTANEOUS FEEDBACK
 
 
-plt.show()
+
+ini_m_gas_eq=[0.0]
+ini_m_star_eq=[0.0]
+
+ini_m_z_gas_eq=[0.0]
+ini_m_z_star_eq=[0.0]
+
+ini_m_dust_eq=[0.0]
+
+m_g_eq_val_1=[]
+m_star_eq_val_1=[]
+m_z_g_eq_val_1=[]
+m_z_star_eq_val_1=[]
+m_dust_eq_val_1=[]
+
+start=0
+stop=100
+check=86
+
+for i in range(start,stop,1):
+    print(i)
+    redshift=np.array([])
+    halo_mass=np.array([])
+    halo_mass_rate=np.array([])
+    
+    redshift=np.loadtxt(f"C:/Users/Anand Menon/Documents/ICRAR Stuff/Data Sets/Sorted Data/mh{no}_data/Redshifts/redshift_{i}.txt",delimiter=' ')
+    halo_mass=np.loadtxt(f"C:/Users/Anand Menon/Documents/ICRAR Stuff/Data Sets/Sorted Data/mh{no}_data/Halo Mass/halo_mass_{i}.txt",delimiter=' ')
+    halo_mass_rate=np.loadtxt(f"C:/Users/Anand Menon/Documents/ICRAR Stuff/Data Sets/Sorted Data/mh{no}_data/Halo Mass Rate/halo_mass_rate_{i}.txt",delimiter=' ')
+    
+    cosmic_time=t(redshift)
+    h=(cosmic_time[len(cosmic_time)-1]-cosmic_time[0])/len(cosmic_time)
+    
+    tsn=cosmic_time[0]+t_d
+
+    m_dot_cg_val=m_dot_cg(redshift,halo_mass,halo_mass_rate)
+    
+    ini_m_gas_eq=[0.0]
+    ini_m_star_eq=[0.0]
+
+    ini_m_z_gas_eq=[0.0]
+    ini_m_z_star_eq=[0.0]
+    
+    ini_m_dust_eq=[0.0]
+
+    m_g_eq_val_1=[]
+    m_star_eq_val_1=[]
+    m_z_g_eq_val_1=[]
+    m_z_star_eq_val_1=[]
+    m_dust_eq_val_1=[]
+
+    z_star_val=0.0
+    
+    for j in range(0,len(cosmic_time)):
+        if (j == 0):
+            t_span=[cosmic_time[j],cosmic_time[j]]
+        else:
+            t_span=[cosmic_time[j-1],cosmic_time[j]]
+        
+        
+        solution=solve_ivp(diff_eqn_eq_gas_1,t_span,ini_m_gas_eq,args=[m_dot_cg_val[j],halo_mass[j],z_star_val],max_step=h)
+        m_g = solution.y[0][len(solution.y[0])-1]
+        
+        solution=solve_ivp(diff_eqn_eq_star_1,t_span,ini_m_star_eq,args=[ini_m_gas_eq[0]],max_step=h)
+        m_s = solution.y[0][len(solution.y[0])-1]
+        
+        solution=solve_ivp(diff_eqn_eq_zgas_1,t_span,ini_m_z_gas_eq,args=[ini_m_gas_eq[0],m_dot_cg_val[j],halo_mass[j],z_star_val],max_step=h)
+        m_z_g=solution.y[0][len(solution.y[0])-1]
+            
+        solution=solve_ivp(diff_eqn_zstar_2,t_span,ini_m_z_star_eq,args=[ini_m_z_gas_eq[0]],max_step=h)
+        m_z_s=solution.y[0][len(solution.y[0])-1]
+        
+        solution=solve_ivp(diff_eqn_eq_dust_1,t_span,ini_m_dust_eq,args=[ini_m_gas_eq[0]],max_step=h)
+        m_d = solution.y[0][len(solution.y[0])-1]
+        
+        
+        ini_m_gas_eq=[m_g]
+        ini_m_star_eq=[m_s]
+        ini_m_z_gas_eq=[m_z_g]
+        ini_m_z_star_eq=[m_z_s]
+        ini_m_dust_eq=[m_d]
+        
+        if (ini_m_gas_eq[0] < 0.0):
+            ini_m_gas_eq[0]=0.0
+            ini_m_z_gas_eq[0]=0.0    
+        
+        if (ini_m_star_eq[0] < 0.0):
+            ini_m_star_eq[0]=0.0
+            ini_m_z_star_eq[0]=0.0
+            
+        if (ini_m_z_gas_eq[0] < 0.0):
+            ini_m_z_gas_eq[0]=0.0
+            
+        if (ini_m_z_star_eq[0] < 0.0):
+            ini_m_z_star_eq[0]=0.0  
+            
+        if (ini_m_dust_eq[0] < 0.0):
+            ini_m_dust_eq[0]=0.0 
+            
+        if (ini_m_star_eq[0] == 0.0):
+            z_star_val=0.0
+            
+        elif (ini_m_star_eq[0] > 0.0):
+            z_star_val=ini_m_z_star_eq[0]/ini_m_star_eq[0]
+        
+
+        m_g_eq_val_1=np.append(m_g_eq_val_1,ini_m_gas_eq)
+        m_star_eq_val_1=np.append(m_star_eq_val_1,ini_m_star_eq)
+        m_z_g_eq_val_1=np.append(m_z_g_eq_val_1,ini_m_z_gas_eq)
+        m_z_star_eq_val_1=np.append(m_z_star_eq_val_1,ini_m_z_star_eq)
+        m_dust_eq_val_1=np.append(m_dust_eq_val_1,ini_m_dust_eq)
+    
+    print(len(m_z_g_eq_val_1))
+    print(len(m_z_star_eq_val_1))    
+
+    np.savetxt(f"C:/Users/Anand Menon/Documents/ICRAR Stuff/Results/No UV No Delay/mh{no}_data/gas/tree_{i}.txt",m_g_eq_val_1,delimiter=' ')
+    np.savetxt(f"C:/Users/Anand Menon/Documents/ICRAR Stuff/Results/No UV No Delay/mh{no}_data/star/tree_{i}.txt",m_star_eq_val_1,delimiter=' ')
+    np.savetxt(f"C:/Users/Anand Menon/Documents/ICRAR Stuff/Results/No UV No Delay/mh{no}_data/z_gas/tree_{i}.txt",m_z_g_eq_val_1,delimiter=' ')
+    np.savetxt(f"C:/Users/Anand Menon/Documents/ICRAR Stuff/Results/No UV No Delay/mh{no}_data/z_star/tree_{i}.txt",m_z_star_eq_val_1,delimiter=' ')    
+    
+    plt.semilogy(cosmic_time,halo_mass,label='Halo mass')
+    plt.semilogy(cosmic_time,halo_mass_rate,label='Halo mass rate')
+            
+    plt.semilogy(cosmic_time,m_g_eq_val_1,label='Gas mass values')
+    plt.semilogy(cosmic_time,m_star_eq_val_1,label='Stellar mass values')
+    plt.semilogy(cosmic_time,m_z_g_eq_val_1,label='Gas metallicity values')
+    plt.semilogy(cosmic_time,m_z_star_eq_val_1,label='Stellar metallicity')
+    plt.semilogy(cosmic_time,m_dust_eq_val_1,label='Dust mass')
+
+    plt.ylim(10**-3,10**11)
+    plt.legend() 
+                
+    plt.show()
 
 
 
