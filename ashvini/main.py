@@ -202,7 +202,7 @@ no=10        #HALO MASS POWER VALUE
 
 uv_choice=input("Do you want to include background UV suppression or not?")
 
-t_d=0.015 #THIS SHOULD BE CHANGED TO USER DEFINE
+t_d=input("Do you want to include background UV suppression or not?") #THIS SHOULD BE PUT AS A CHOICE FOR DELAYED/INSTANTANEOUS
 
 
 #DELAYED FEEDBACK
