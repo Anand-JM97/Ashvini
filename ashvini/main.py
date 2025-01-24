@@ -194,9 +194,10 @@ def diff_eqn_zstar_2(t,y,m_g,m_z_g):
     return f_m_z_star
 
 
-start=30
-stop=50
+start=0
+stop=100
 check=86
+
 
 no=10        #HALO MASS POWER VALUE
 
