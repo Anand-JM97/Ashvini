@@ -1,23 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Sun Jul 21 11:47:28 2024
-
-Main code with evolve galaxy function
-
-@author: Anand Menon
-"""
-
-# PYTHON PACKAGES
-
-import matplotlib.pyplot as plt
 import numpy as np
 from astropy.cosmology import Planck15 as cosmo
-from astropy.cosmology import z_at_value
 import astropy.units as u
 
 from scipy.integrate import solve_ivp
-
-# PACKAGES FROM ASHVINI
 
 from io import mdot_h, m_h, redshift
 import reionization as rei
@@ -69,7 +55,7 @@ def m_dot_cg_no_UV(z, m_h0_val):
 def diff_eqn_gas_1(t, y, m_d_cg):  # diff_eqns_1
     z_val = z(t)
 
-    f_m_gas = m_d_cg - (sf.e_ff / sf.t_ff(z_val)) * y
+    f_m_gas = m_d_cg - (sf.e_ff / sf.time_freefall(z_val)) * y
     return f_m_gas
 
 

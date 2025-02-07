@@ -7,7 +7,6 @@ Code for star formation
 
 import numpy as np
 from astropy.cosmology import Planck15 as cosmo
-from astropy.cosmology import units as cu
 from astropy.cosmology import z_at_value
 import astropy.units as u
 
@@ -19,31 +18,6 @@ omega_b = cosmo.Ob0
 omega_L = cosmo.Ode0
 
 e_ff = 0.015
-
-
-def t(z):
-    """
-    Function to convert redshift to cosmic time.
-    Args:
-        z (float): Parameter representing redshift.
-
-    Returns:
-        Float: The comsic time value.
-    """
-    t_val = cosmo.age(z)
-    return t_val
-
-
-def z(t):
-    """
-    Function to convert cosmic time to redshift.
-    Args:
-        t (float): Parameter representing cosmic time.
-
-    Returns:
-        Float: The redshift value.
-    """
-    return z_at_value(cosmo.age, t)
 
 
 def time_freefall(z):
