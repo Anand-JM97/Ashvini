@@ -23,7 +23,7 @@ def z_at_time(t):
     Returns:
         Float: The redshift value.
     """
-    return z_at_value(cosmo.age, t)
+    return cosmo.z_at_value(cosmo.age, t)
 
 
 def Hubble_time(z):
