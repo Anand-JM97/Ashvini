@@ -12,14 +12,13 @@ import reionization as rei
 import star_formation as sf
 import supernovae_feedback as snw
 
-H_0 = cosmo.H0  # in km / (Mpc s)
-H_0 = H_0.to(u.Gyr ** (-1))  # in 1/Gyr
+H_0 = utils.H_0 # in 1/Gyr
 
 A = 0.030
 
-omega_m = cosmo.Om0
-omega_b = cosmo.Ob0
-omega_L = cosmo.Ode0
+omega_m = utils.omega_m
+omega_b = utils.omega_b
+omega_L = utils.omega_L
 
 
 def evolve_galaxies():
@@ -41,6 +40,18 @@ zeta_w = 1
 
 
 def cosmological_accretion_rate(z, m_h, m_dot_h, uv_suppression_check):
+    """
+    Function to obtain the cosmological baryonic accretion rate.
+    Args:
+        z (float): Parameter representing redshift.
+        m_h (float): Halo mass value at z.
+        m_dot_h (float): Halo mass accretion rate at z.
+        uv_suppresion_check (bool ?): Check for whether accretion suppression due to background UV is on or not.
+
+    Returns:
+        Float: The baryonic cosmological accretion rate at z.
+    """
+    
     
     if (uv_suppression_check == 1):
         m_dot_cg_val = (
