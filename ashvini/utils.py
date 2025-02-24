@@ -1,6 +1,12 @@
 from astropy.cosmology import Planck15 as cosmo
 import astropy.units as u
 
+H_0 = cosmo.H0  # in km / (Mpc s)
+H_0 = H_0.to(u.Gyr ** (-1))  # in 1/Gyr
+
+omega_m = cosmo.Om0
+omega_b = cosmo.Ob0
+omega_L = cosmo.Ode0
 
 def time(z):
     """
