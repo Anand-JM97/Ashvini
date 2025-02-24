@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+
+
 import numpy as np
 from astropy.cosmology import Planck15 as cosmo
 import astropy.units as u
@@ -6,19 +8,15 @@ import astropy.units as u
 from scipy.integrate import solve_ivp
 
 from io import read_trees
+from utils import omega_m,omega_b,omega_L,H_0
 
 import utils as utils
 import reionization as rei
 import star_formation as sf
 import supernovae_feedback as snw
 
-H_0 = utils.H_0 # in 1/Gyr
 
 A = 0.030
-
-omega_m = utils.omega_m
-omega_b = utils.omega_b
-omega_L = utils.omega_L
 
 
 def evolve_galaxies():
