@@ -19,7 +19,6 @@ def time(z):
     """
     return cosmo.age(z)
 
-
 def z_at_time(t):
     """
     Function to convert cosmic time to redshift.
@@ -30,7 +29,6 @@ def z_at_time(t):
         Float: The redshift value.
     """
     return cosmo.z_at_value(cosmo.age, t)
-
 
 def Hubble_time(z):
     """
