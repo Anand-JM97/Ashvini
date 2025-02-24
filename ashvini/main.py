@@ -40,6 +40,7 @@ zeta_w = 1
 def cosmological_accretion_rate(z, m_h, m_dot_h, uv_suppression_check):
     """
     Function to obtain the cosmological baryonic accretion rate.
+    
     Args:
         z (float): Parameter representing redshift.
         m_h (float): Halo mass value at z.
@@ -48,9 +49,8 @@ def cosmological_accretion_rate(z, m_h, m_dot_h, uv_suppression_check):
 
     Returns:
         Float: The baryonic cosmological accretion rate at z.
-    """
-    
-    
+    """ 
+
     if (uv_suppression_check == 1):
         m_dot_cg_val = (
             (omega_b / omega_m) * m_dot_h * rei.epsilon_uv(z, m_h, m_dot_h)
@@ -64,35 +64,35 @@ def cosmological_accretion_rate(z, m_h, m_dot_h, uv_suppression_check):
 
 # IVF SOLVER FUNCTIONS
 
-# NO FEEDBACK
+# NO FEEDBACK ACTING SCENARIO FOR DELAYED FEEDBACK
 
 
-def diff_eqn_gas_1(t, y, m_d_cg):  # diff_eqns_1
-    z_val = z(t)
+def gas_mass_evolution_equation_no_feedback(t, y, m_d_cg):  # diff_eqns_1
+    z_val = utils.z_at_time(t)
 
     f_m_gas = m_d_cg - (sf.e_ff / sf.time_freefall(z_val)) * y
     return f_m_gas
 
 
-def diff_eqn_star_1(t, y, m_g):  # diff_eqns_1
-    z_val = z(t)
+def stellar_mass_evolution_equation_no_feedback(t, y, m_g):  # diff_eqns_1
+    z_val = utils.z_at_time(t)
 
     f_m_star = (sf.e_ff / sf.t_ff(z_val)) * m_g
     return f_m_star
 
 
-def diff_eqn_zgas_1(t, y, m_g, m_d_cg):  # diff_eqns_1
-    z_val = z(t)
+def gas_metallicity_mass_evolution_equation_no_feedback(t, y, m_g, m_d_cg):  # diff_eqns_1
+    z_val = utils.z_at_time(t)
 
     f_m_z_gas = (z_igm * m_d_cg) - ((y) * (sf.e_ff / sf.t_ff(z_val)))
     return f_m_z_gas
 
 
-# DELAYED FEEDBACK
+# FEEDBACK ACTING SCENARIO FOR DELAYED FEEDBACK
 
 
-def diff_eqn_gas_2(t, y, m_d_cg, m_halo, m_d_s_d, z_star):  # diff_eqns_2
-    z_val = z(t)
+def gas_mass_evolution_equation_delayed_feedback(t, y, m_d_cg, m_halo, m_d_s_d, z_star):  # diff_eqns_2
+    z_val = utils.z_at_time(t)
 
     f_m_gas = (
         m_d_cg
@@ -102,15 +102,15 @@ def diff_eqn_gas_2(t, y, m_d_cg, m_halo, m_d_s_d, z_star):  # diff_eqns_2
     return f_m_gas
 
 
-def diff_eqn_star_2(t, y, m_g):  # diff_eqns_2
-    z_val = z(t)
+def stellar_mass_evolution_equation_delayed_feedback(t, y, m_g):  # diff_eqns_2
+    z_val = utils.z_at_time(t)
 
     f_m_star = (sf.e_ff / sf.t_ff(z_val)) * m_g
     return f_m_star
 
 
-def diff_eqn_zgas_2(t, y, m_g, m_d_cg, m_halo, m_d_s_d, z_star):  # diff_eqns_2
-    z_val = z(t)
+def gas_metallicity_mass_evolution_equation_delayed_feedback(t, y, m_g, m_d_cg, m_halo, m_d_s_d, z_star):  # diff_eqns_2
+    z_val = utils.z_at_time(t)
 
     f_m_z_gas = (
         (z_igm * m_d_cg)
@@ -124,8 +124,8 @@ def diff_eqn_zgas_2(t, y, m_g, m_d_cg, m_halo, m_d_s_d, z_star):  # diff_eqns_2
 # INSTANTANEOUS FEEDBACK
 
 
-def diff_eqn_eq_gas_1(t, y, m_d_cg, m_halo, z_star):  # diff_eqns_eq_1
-    z_val = z(t)
+def gas_mass_evolution_equation_instantaneous_feedback(t, y, m_d_cg, m_halo, z_star):  # diff_eqns_eq_1
+    z_val = utils.z_at_time(t)
 
     f_m_gas = (
         m_d_cg
@@ -135,15 +135,15 @@ def diff_eqn_eq_gas_1(t, y, m_d_cg, m_halo, z_star):  # diff_eqns_eq_1
     return f_m_gas
 
 
-def diff_eqn_eq_star_1(t, y, m_g):  # diff_eqns_eq_1
-    z_val = z(t)
+def stellar_mass_evolution_equation_instantaneous_feedback(t, y, m_g):  # diff_eqns_eq_1
+    z_val = utils.z_at_time(t)
 
     f_m_star = (sf.e_ff / sf.t_ff(z_val)) * m_g
     return f_m_star
 
 
-def diff_eqn_eq_zgas_1(t, y, m_g, m_d_cg, m_halo, z_star):  # diff_eqns_eq_1
-    z_val = z(t)
+def gas_metallicity_mass_evolution_equation_instantaneous_feedback(t, y, m_g, m_d_cg, m_halo, z_star):  # diff_eqns_eq_1
+    z_val = utils.z_at_time(t)
     f_m_star = (sf.e_ff / sf.t_ff(z_val)) * m_g
 
     f_m_z_gas = (
