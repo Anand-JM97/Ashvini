@@ -5,7 +5,9 @@ import astropy.units as u
 
 from scipy.integrate import solve_ivp
 
-from io import mdot_h, m_h, redshift
+from io import read_trees
+
+import utils as utils
 import reionization as rei
 import star_formation as sf
 import supernovae_feedback as snw
@@ -27,6 +29,9 @@ def evolve_galaxies():
 
     return 1
 
+#MERGER TREE INPUT
+
+m_halo, m_dot_halo, redshift = read_trees()
 
 # Metallicity parameters
 
@@ -35,15 +40,16 @@ y_z = 0.06
 zeta_w = 1
 
 
-def m_dot_cg_with_UV(z, m_halo, mdot_halo):
-    m_dot_cg_val = (
-        (omega_b / omega_m) * mdot_halo * rei.epsilon_uv(z, m_halo, mdot_halo)
-    )
-    return m_dot_cg_val
-
-
-def m_dot_cg_no_UV(z, m_h0_val):
-    m_dot_cg_val = (omega_b / omega_m) * mdot_h(z, m_h0_val)
+def cosmological_accretion_rate(z, m_h, m_dot_h, uv_suppression_check):
+    
+    if (uv_suppression_check == 1):
+        m_dot_cg_val = (
+            (omega_b / omega_m) * m_dot_h * rei.epsilon_uv(z, m_h, m_dot_h)
+        )
+    
+    elif (uv_suppression_check == 0):
+        m_dot_cg_val = (omega_b / omega_m) * m_dot_h
+    
     return m_dot_cg_val
 
 
