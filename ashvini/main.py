@@ -68,18 +68,20 @@ def cosmological_accretion_rate(z, m_h, m_dot_h, uv_suppression_check):
 
 def evolve_gas(
     time,
-    gas_mass,
+    y,      #gas mass
     gas_accretion_rate,
     halo_mass,
     past_sfr,
     stellar_metallicity,
     kind="delayed",
 ):
+
     """
-    Eqs 1 to 3 in Menon et al 2024
+    Eqn 1 in Menon et al 2024 with 2 and 3 substituted
     """
+
     redshift = utils.z_at_time(time)
-    SFR_now = (sf.e_ff / sf.time_freefall(redshift)) * gas_mass
+    SFR_now = (sf.e_ff / sf.time_freefall(redshift)) * y
     wind_modifier = past_sfr
 
     if kind == "no":
@@ -94,6 +96,20 @@ def evolve_gas(
     )
     return gas_mass_evolution_rate
 
+def evolve_star_formation(
+    time,
+    y,          #stellar mass
+    gas_mass
+):
+    
+    """
+    Equation 2 in Menon et al 2024
+    """
+    
+    redshift = utils.z_at_time(time)
+    
+    star_formation_rate = (sf.e_ff / sf.time_freefall(redshift)) * gas_mass
+    return star_formation_rate
 
 def stellar_mass_evolution_equation_no_feedback(t, y, m_g):  # diff_eqns_1
     z_val = utils.z_at_time(t)
