@@ -46,8 +46,8 @@ def eta(z, m_halo, pi_fid=1, epsilon_p=5):
 
 def m_dot_wind(m_gas, z, m_halo, stellar_metallicity):
     m_dot_wind_val = (
-        eta(z, m_halo)
-        * metallicity_function(stellar_metallicity)
+        metallicity_function(stellar_metallicity)
+        * eta(z, m_halo)
         * sf.star_formation_rate(m_gas, z, m_halo)
     )
     return m_dot_wind_val
