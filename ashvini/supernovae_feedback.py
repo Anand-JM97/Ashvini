@@ -7,19 +7,14 @@ Code for supernova feedback
 
 import numpy as np
 from astropy.cosmology import Planck15 as cosmo
-from astropy.cosmology import units as cu
-from astropy.cosmology import z_at_value
 import astropy.units as u
 
+from utils import omega_m, omega_b, omega_L, H_0
+
 from io import mdot_h, m_h
+import utils as utils
 import star_formation as sf
 
-H_0 = cosmo.H0  # in km / (Mpc s)
-H_0 = H_0.to(u.Gyr ** (-1))  # in 1/Gyr
-
-omega_m = cosmo.Om0
-omega_b = cosmo.Ob0
-omega_L = cosmo.Ode0
 
 # Supernova wind specific variables
 # pi_fid=1
