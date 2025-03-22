@@ -146,7 +146,19 @@ def evolve_gas_metals(
 ):
 
     redshift = utils.z_at_time(t)
-    
+    present_sfr = (sf.e_ff / sf.time_freefall(redshift)) * y
+    wind_sfr = past_sfr
+
+    if kind == "no":
+        wind_sfr = 0.0
+    if kind == "instantaneous":
+        wind_sfr = present_sfr
+        
+    gas_metal_mass_evolution_rate = (
+            
+        
+    )
+    return gas_metal_mass_evolution_rate
     
 def gas_metallicity_mass_evolution_equation_no_feedback(
     t, y, m_g, m_d_cg
