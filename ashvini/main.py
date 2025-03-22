@@ -111,12 +111,6 @@ def evolve_star_formation(
     star_formation_rate = (sf.e_ff / sf.time_freefall(redshift)) * gas_mass
     return star_formation_rate
 
-def stellar_mass_evolution_equation_no_feedback(t, y, m_g):  # diff_eqns_1
-    z_val = utils.z_at_time(t)
-
-    f_m_star = (sf.e_ff / sf.t_ff(z_val)) * m_g
-    return f_m_star
-
 
 def gas_metallicity_mass_evolution_equation_no_feedback(
     t, y, m_g, m_d_cg
@@ -128,13 +122,6 @@ def gas_metallicity_mass_evolution_equation_no_feedback(
 
 
 # FEEDBACK ACTING SCENARIO FOR DELAYED FEEDBACK
-
-
-def stellar_mass_evolution_equation_delayed_feedback(t, y, m_g):  # diff_eqns_2
-    z_val = utils.z_at_time(t)
-
-    f_m_star = (sf.e_ff / sf.t_ff(z_val)) * m_g
-    return f_m_star
 
 
 def gas_metallicity_mass_evolution_equation_delayed_feedback(
@@ -152,13 +139,6 @@ def gas_metallicity_mass_evolution_equation_delayed_feedback(
 
 
 # INSTANTANEOUS FEEDBACK
-
-
-def stellar_mass_evolution_equation_instantaneous_feedback(t, y, m_g):  # diff_eqns_eq_1
-    z_val = utils.z_at_time(t)
-
-    f_m_star = (sf.e_ff / sf.t_ff(z_val)) * m_g
-    return f_m_star
 
 
 def gas_metallicity_mass_evolution_equation_instantaneous_feedback(
