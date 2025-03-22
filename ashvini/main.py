@@ -126,7 +126,12 @@ def evolve_supernova_feedback(
     redshift = utils.z_at_time(time)
     
     star_formation_rate = (sf.e_ff / sf.time_freefall(redshift)) * gas_mass
-    wind_mass_rate = snw.eta(redshift, halo_mass, stellar_metallicity) * star_formation_rate
+    wind_mass_rate = (
+        snw.metallicity_function(stellar_metallicity)
+        * snw.eta(redshift, halo_mass)
+        * star_formation_rate
+    )
+    
     return wind_mass_rate
 
 def gas_metallicity_mass_evolution_equation_no_feedback(
