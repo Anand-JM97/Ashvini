@@ -81,18 +81,18 @@ def evolve_gas(
     """
 
     redshift = utils.z_at_time(t)
-    SFR_now = (sf.e_ff / sf.time_freefall(redshift)) * y
-    wind_modifier = past_sfr
+    present_sfr = (sf.e_ff / sf.time_freefall(redshift)) * y
+    wind_sfr = past_sfr
 
     if kind == "no":
-        wind_modifier = 0
+        wind_sfr = 0
     if kind == "instantaneous":
-        wind_modifier = SFR_now
+        wind_sfr = present_sfr
 
     gas_mass_evolution_rate = (
         gas_accretion_rate
-        - SFR_now
-        - snw.eta(redshift, halo_mass, stellar_metallicity) * wind_modifier
+        - present_sfr
+        - snw.eta(redshift, halo_mass, stellar_metallicity) * wind_sfr
     )
     return gas_mass_evolution_rate
 
