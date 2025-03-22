@@ -99,7 +99,7 @@ def evolve_gas(
 def evolve_star_formation(
     time,
     y,          #stellar mass
-    gas_mass
+    gas_mass,
 ):
     
     """
@@ -111,6 +111,23 @@ def evolve_star_formation(
     star_formation_rate = (sf.e_ff / sf.time_freefall(redshift)) * gas_mass
     return star_formation_rate
 
+def evolve_supernova_feedback(
+    time,
+    y,          #wind mass
+    gas_mass,
+    halo_mass,
+    stellar_metallicity
+):
+    
+    """
+    Equation 3 in Menon et al 2024
+    """
+    
+    redshift = utils.z_at_time(time)
+    
+    star_formation_rate = (sf.e_ff / sf.time_freefall(redshift)) * gas_mass
+    wind_mass_rate = snw.eta(redshift, halo_mass, stellar_metallicity) * star_formation_rate
+    return wind_mass_rate
 
 def gas_metallicity_mass_evolution_equation_no_feedback(
     t, y, m_g, m_d_cg
