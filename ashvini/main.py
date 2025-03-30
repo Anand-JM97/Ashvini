@@ -142,7 +142,7 @@ def evolve_gas_metals(
 ):
 
     redshift = utils.z_at_time(t)
-    present_sfr = (sf.e_ff / sf.time_freefall(redshift)) * y
+    present_sfr = (sf.e_ff / sf.time_freefall(redshift)) * gas_mass
     wind_sfr = past_sfr
 
     if kind == "no":
@@ -151,14 +151,16 @@ def evolve_gas_metals(
         wind_sfr = present_sfr
         
     gas_metal_mass_evolution_rate = (
-        (z_igm * gas_accretion_rate)
-        - (y * (sf.e_ff / sf.t_ff(redshift)))
-        + (y_z * wind_sfr)
-        - (snw.eta(redshift, halo_mass, stellar_metallicity) * (y / gas_mass) * wind_sfr)
+        (z_igm * gas_accretion_rate)                #Enriched gas accreting from IGM
+        - (y * present_sfr / gas_mass)              #Removal from ISM during star formation
+        + (y_z * wind_sfr)                          #Delayed enrichment of ISM by dying stars
+        - (snw.eta(redshift, halo_mass, stellar_metallicity) * (y / gas_mass) * wind_sfr)       #Delayed removal from ISM by SN feedback
     )
     
     return gas_metal_mass_evolution_rate
     
+
+
 def gas_metallicity_mass_evolution_equation_no_feedback(
     t, y, m_g, m_d_cg
 ):  # diff_eqns_1
