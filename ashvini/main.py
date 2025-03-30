@@ -161,50 +161,6 @@ def evolve_gas_metals(
     
 
 
-def gas_metallicity_mass_evolution_equation_no_feedback(
-    t, y, m_g, m_d_cg
-):  # diff_eqns_1
-    z_val = utils.z_at_time(t)
-
-    f_m_z_gas = (z_igm * m_d_cg) - ((y) * (sf.e_ff / sf.t_ff(z_val)))
-    return f_m_z_gas
-
-
-# FEEDBACK ACTING SCENARIO FOR DELAYED FEEDBACK
-
-
-def gas_metallicity_mass_evolution_equation_delayed_feedback(
-    t, y, m_g, m_d_cg, m_halo, m_d_s_d, z_star
-):  # diff_eqns_2
-    z_val = utils.z_at_time(t)
-
-    f_m_z_gas = (
-        (z_igm * m_d_cg)
-        - (y * (sf.e_ff / sf.t_ff(z_val)))
-        + (y_z * m_d_s_d)
-        - (snw.eta(z_val, m_halo, z_star) * (y / m_g) * m_d_s_d)
-    )
-    return f_m_z_gas
-
-
-# INSTANTANEOUS FEEDBACK
-
-
-def gas_metallicity_mass_evolution_equation_instantaneous_feedback(
-    t, y, m_g, m_d_cg, m_halo, z_star
-):  # diff_eqns_eq_1
-    z_val = utils.z_at_time(t)
-    f_m_star = (sf.e_ff / sf.t_ff(z_val)) * m_g
-
-    f_m_z_gas = (
-        (z_igm * m_d_cg)
-        - (snw.eta(z_val, m_halo, z_star) * y * sf.e_ff / sf.t_ff(z_val))
-        + (y_z * f_m_star)
-        - (y * sf.e_ff / sf.t_ff(z_val))
-    )
-    return f_m_z_gas
-
-
 # STELLAR METALLICITY EQUATIONS- Remove (y_z*e_ff/t_ff(z_val)*m_g) if not needed
 
 
