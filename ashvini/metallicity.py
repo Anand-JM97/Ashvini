@@ -17,6 +17,6 @@ import utils as utils
 
 # Metallicity parameters
 
-z_igm = 10 ** (-3)
-y_z = 0.06
-zeta_w = 1
+accreting_gas_metallicity = 10 ** (-3)
+stellar_metallicity_yield = 0.06
+wind_metallicity_enhancement_factor = 1
