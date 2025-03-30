@@ -10,7 +10,7 @@ from scipy.integrate import solve_ivp
 from io import read_trees
 
 from utils import omega_m, omega_b, omega_L, H_0
-from metallicity import z_igm,y_z,zeta_w
+from metallicity import accreting_gas_metallicity,stellar_metallicity_yield,wind_metallicity_enhancement_factor
 
 import utils as utils
 import reionization as rei
@@ -151,15 +151,14 @@ def evolve_gas_metals(
         wind_sfr = present_sfr
         
     gas_metal_mass_evolution_rate = (
-        (z_igm * gas_accretion_rate)                #Enriched gas accreting from IGM
-        - (y * present_sfr / gas_mass)              #Removal from ISM during star formation
-        + (y_z * wind_sfr)                          #Delayed enrichment of ISM by dying stars
+        (accreting_gas_metallicity * gas_accretion_rate)                #Enriched gas accreting from IGM
+        - (y * present_sfr / gas_mass)                                  #Removal from ISM during star formation
+        + (stellar_metallicity_yield * wind_sfr)                        #Delayed enrichment of ISM by dying stars
         - (snw.eta(redshift, halo_mass, stellar_metallicity) * (y / gas_mass) * wind_sfr)       #Delayed removal from ISM by SN feedback
     )
     
     return gas_metal_mass_evolution_rate
     
-
 
 # STELLAR METALLICITY EQUATIONS- Remove (y_z*e_ff/t_ff(z_val)*m_g) if not needed
 
