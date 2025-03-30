@@ -107,7 +107,7 @@ def evolve_star_formation(
     star_formation_rate = (sf.e_ff / sf.time_freefall(redshift)) * gas_mass
     return star_formation_rate
 
-def evolve_supernova_feedback(
+def evolve_wind_mass(
     t,          #cosmic time
     y,          #wind mass
     gas_mass,
@@ -122,6 +122,7 @@ def evolve_supernova_feedback(
     redshift = utils.z_at_time(t)
     
     star_formation_rate = (sf.e_ff / sf.time_freefall(redshift)) * gas_mass
+    
     wind_mass_rate = (
         snw.metallicity_function(stellar_metallicity)
         * snw.eta(redshift, halo_mass)
@@ -158,6 +159,15 @@ def evolve_gas_metals(
     )
     
     return gas_metal_mass_evolution_rate
+
+def evolve_stellar_metallicity(
+    t,
+    y,
+    gas_mass,
+    gas_metal_mass
+):  
+    
+    redshift = utils.z_at_time(t)
     
 
 # STELLAR METALLICITY EQUATIONS- Remove (y_z*e_ff/t_ff(z_val)*m_g) if not needed
