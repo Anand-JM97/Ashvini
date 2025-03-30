@@ -31,7 +31,7 @@ def evolve_galaxies():
 
 # MERGER TREE INPUT
 
-m_halo, m_dot_halo, redshift = read_trees()
+#m_halo, m_dot_halo, redshift = read_trees()
 
 
 def cosmological_accretion_rate(z, m_h, m_dot_h, uv_suppression_check):
@@ -151,9 +151,12 @@ def evolve_gas_metals(
         wind_sfr = present_sfr
         
     gas_metal_mass_evolution_rate = (
-            
-        
+        (z_igm * gas_accretion_rate)
+        - (y * (sf.e_ff / sf.t_ff(redshift)))
+        + (y_z * wind_sfr)
+        - (snw.eta(redshift, halo_mass, stellar_metallicity) * (y / gas_mass) * wind_sfr)
     )
+    
     return gas_metal_mass_evolution_rate
     
 def gas_metallicity_mass_evolution_equation_no_feedback(
