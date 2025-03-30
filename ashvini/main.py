@@ -8,7 +8,9 @@ import astropy.units as u
 from scipy.integrate import solve_ivp
 
 from io import read_trees
+
 from utils import omega_m, omega_b, omega_L, H_0
+from metallicity import z_igm,y_z,zeta_w
 
 import utils as utils
 import reionization as rei
@@ -30,12 +32,6 @@ def evolve_galaxies():
 # MERGER TREE INPUT
 
 m_halo, m_dot_halo, redshift = read_trees()
-
-# Metallicity parameters
-
-z_igm = 10 ** (-3)
-y_z = 0.06
-zeta_w = 1
 
 
 def cosmological_accretion_rate(z, m_h, m_dot_h, uv_suppression_check):
