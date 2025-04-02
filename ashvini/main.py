@@ -168,22 +168,11 @@ def evolve_stellar_metallicity(
 ):  
     
     redshift = utils.z_at_time(t)
+    stellar_metallicity_evolution_rate = (
+        sf.e_ff / sf.t_ff(redshift) * gas_metal_mass
+    )
     
-
-# STELLAR METALLICITY EQUATIONS- Remove (y_z*e_ff/t_ff(z_val)*m_g) if not needed
-
-
-def diff_eqn_zstar_1(t, y, m_g):
-    z_val = z(t)
-    f_m_z_star = 0.0
-    return f_m_z_star
-
-
-def diff_eqn_zstar_2(t, y, m_g, m_z_g):
-    z_val = z(t)
-    f_m_z_star = (m_z_g) * (sf.e_ff / sf.t_ff(z_val))
-    return f_m_z_star
-
+    return stellar_metallicity_evolution_rate
 
 start = 0
 stop = 100
