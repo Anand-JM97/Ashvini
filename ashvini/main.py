@@ -21,14 +21,6 @@ import star_formation as sf
 import supernovae_feedback as snw
 
 
-def evolve_galaxies():
-    """This will be the main function. We should have this call star formation, supernovae feedback, and such defined
-    in the other files. Ideally this should be the only the function that is defined in this file.
-    """
-
-    return 1
-
-
 # MERGER TREE INPUT
 
 # m_halo, m_dot_halo, redshift = read_trees()
@@ -169,6 +161,49 @@ def evolve_stellar_metallicity(t, y, gas_mass, gas_metal_mass):
 
     return stellar_metallicity_evolution_rate
 
+
+def evolve_galaxies(t, state, params):
+    """This will be the main function. We should have this call star formation, supernovae feedback, and such defined
+    in the other files. Ideally this should be the only the function that is defined in this file.
+    """
+    gas_mass = state[0]
+    star_mass = state[1]
+    gas_metal_mass = state[2]
+    stellar_metal_mass = state[3]
+    
+    # Extract relevant args for each subfunction
+    gas_args = params["gas"]
+    star_args = params["star"]
+    gas_metals_args = params["gas_metals"]
+    star_metals_args = params["star_metals"]
+
+    # Call evolution functions
+    d_gas_mass = evolve_gas(t, gas_mass, **gas_args)
+    d_star_mass = evolve_star_formation(t, star_mass, gas_mass, **star_args)
+    d_gas_metal_mass = evolve_gas_metals(t, gas_metal_mass, gas_mass, **gas_metals_args)
+    d_stellar_metal_mass = evolve_stellar_metallicity(t, stellar_metal_mass, gas_mass, gas_metal_mass, **star_metals_args)
+
+    return [d_gas_mass, d_star_mass, d_gas_metal_mass, d_stellar_metal_mass]
+
+
+params = {
+    "gas": {
+        "gas_accretion_rate": gas_accretion_rate[j],
+        "halo_mass": halo_mass[j],
+        "past_sfr": past_sfr[j],
+        "stellar_metallicity": z_star_val,
+        "kind": "delayed"
+    },
+    "star": {},  # evolve_star_formation only needs gas_mass
+    "gas_metals": {
+        "gas_accretion_rate": gas_accretion_rate[j],
+        "halo_mass": halo_mass[j],
+        "past_sfr": past_sfr[j],
+        "stellar_metallicity": z_star_val,
+        "kind": "delayed"
+    },
+    "star_metals": {}  # evolve_stellar_metallicity only needs gas and gas metals
+}
 
 start = 0
 stop = 100
