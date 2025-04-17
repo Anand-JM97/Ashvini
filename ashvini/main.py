@@ -1,24 +1,23 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from astropy.cosmology import Planck15 as cosmo
-import astropy.units as u
+import numba as nb
 
 from scipy.integrate import solve_ivp
 
 from utils import read_trees
 
-from utils import omega_m, omega_b, omega_L, H_0
+from utils import omega_m, omega_b
 from metallicity import (
-    accreting_gas_metallicity,
-    stellar_metallicity_yield,
-    wind_metallicity_enhancement_factor,
+    IGM_metallicity,
+    metallicity_yield,
 )
 
 import utils as utils
-import reionization as rei
-import star_formation as sf
+import reionization as reion
 import supernovae_feedback as snw
+
+from star_formation import star_formation_rate
 
 m_halo, m_dot_halo, redshift = read_trees()
 # print(type(m_halo), m_dot_halo, redshift)
@@ -39,9 +38,7 @@ def baryon_accretion_rate(redshift, halo_mass, halo_mass_dot, uv_suppression=Tru
     """
     gas_accretion_rate = (omega_b / omega_m) * halo_mass_dot
     if uv_suppression:
-        gas_accretion_rate = gas_accretion_rate * rei.epsilon_uv(
-            redshift, halo_mass, halo_mass_dot
-        )
+        gas_accretion_rate *= reion.uv_suppression(redshift, halo_mass, halo_mass_dot)
 
     return np.asarray(gas_accretion_rate)
 
@@ -60,41 +57,32 @@ def evolve_gas(
     """
 
     redshift = utils.z_at_time(t)
-    present_sfr = (sf.e_ff / sf.time_freefall(redshift)) * gas_mass
+    present_sfr = star_formation_rate(t, gas_mass=gas_mass)
     wind_sfr = past_sfr
 
+    print(
+        redshift,
+        present_sfr,
+        past_sfr,
+        gas_accretion_rate,
+        halo_mass,
+        stellar_metallicity,
+    )
     if kind == "no":
         wind_sfr = 0
     if kind == "instantaneous":
         wind_sfr = present_sfr
 
     gas_mass_evolution_rate = (
-        gas_accretion_rate
-        - present_sfr
-        - snw.eta(redshift, halo_mass, stellar_metallicity) * wind_sfr
+        gas_accretion_rate - present_sfr - snw.eta(redshift, halo_mass) * wind_sfr
     )
     # print(gas_mass_evolution_rate)
     return np.asarray(gas_mass_evolution_rate)
 
 
-def star_formation_rate(
-    t,  # cosmic time
-    y,
-    gas_mass,
-):
-    """
-    Equation 2 in Menon et al 2024
-    """
-
-    redshift = utils.z_at_time(t)
-
-    star_formation_rate = (sf.e_ff / sf.time_freefall(redshift)) * gas_mass
-    return np.asarray(star_formation_rate)
-
-
 def evolve_wind_mass(
     t,  # cosmic time
-    y,  # wind mass
+    y,  # wind mass; dummy variable
     gas_mass,
     halo_mass,
     stellar_metallicity,
@@ -105,12 +93,12 @@ def evolve_wind_mass(
 
     redshift = utils.z_at_time(t)
 
-    star_formation_rate = (sf.e_ff / sf.time_freefall(redshift)) * gas_mass
+    sfr = star_formation_rate(t, gas_mass=gas_mass)
 
     wind_mass_rate = (
         snw.metallicity_function(stellar_metallicity)
         * snw.eta(redshift, halo_mass)
-        * star_formation_rate
+        * sfr
     )
 
     return wind_mass_rate
@@ -119,6 +107,7 @@ def evolve_wind_mass(
 def evolve_gas_metals(
     t,
     y,
+    gas_metals,
     gas_mass,
     gas_accretion_rate,
     halo_mass,
@@ -127,7 +116,7 @@ def evolve_gas_metals(
     kind="delayed",
 ):
     redshift = utils.z_at_time(t)
-    present_sfr = (sf.e_ff / sf.time_freefall(redshift)) * gas_mass
+    present_sfr = star_formation_rate(t, gas_mass=gas_mass)
     wind_sfr = past_sfr
 
     if kind == "no":
@@ -136,99 +125,55 @@ def evolve_gas_metals(
         wind_sfr = present_sfr
 
     gas_metal_mass_evolution_rate = (
-        (
-            accreting_gas_metallicity * gas_accretion_rate
-        )  # Enriched gas accreting from IGM
+        (IGM_metallicity * gas_accretion_rate)  # Enriched gas accreting from IGM
         - (y * present_sfr / gas_mass)  # Removal from ISM during star formation
-        + (
-            stellar_metallicity_yield * wind_sfr
-        )  # Delayed enrichment of ISM by dying stars
+        + (metallicity_yield * wind_sfr)  # Delayed enrichment of ISM by dying stars
         - (
-            snw.eta(redshift, halo_mass, stellar_metallicity)
-            * (y / gas_mass)
-            * wind_sfr
+            snw.eta(redshift, halo_mass) * (gas_metals / gas_mass) * wind_sfr
         )  # Delayed removal from ISM by SN feedback
     )
 
     return gas_metal_mass_evolution_rate
 
 
-def evolve_stellar_metallicity(t, y, gas_mass, gas_metal_mass):
+def evolve_stars_metals(t, y, gas_metal_mass):
+    # TODO: Seems like we can simply call starformation_rate here
     redshift = utils.z_at_time(t)
-    stellar_metallicity_evolution_rate = sf.e_ff / sf.t_ff(redshift) * gas_metal_mass
+    stars_metals_rate = sf.e_ff / sf.time_freefall(redshift) * gas_metal_mass
 
-    return stellar_metallicity_evolution_rate
+    return stars_metals_rate
 
-
-def evolve_galaxies(t, state, params):
-    """This will be the main function. We should have this call star formation, supernovae feedback, and such defined
-    in the other files. Ideally this should be the only the function that is defined in this file.
-    """
-    gas_mass = state[0]
-    star_mass = state[1]
-    gas_metal_mass = state[2]
-    stellar_metal_mass = state[3]
-
-    # Extract relevant args for each subfunction
-    gas_args = params["gas"]
-    star_args = params["star"]
-    gas_metals_args = params["gas_metals"]
-    star_metals_args = params["star_metals"]
-
-    # Call evolution functions
-    d_gas_mass = evolve_gas(t, gas_mass, **gas_args)
-    d_star_mass = evolve_star_formation(t, star_mass, gas_mass, **star_args)
-    d_gas_metal_mass = evolve_gas_metals(t, gas_metal_mass, gas_mass, **gas_metals_args)
-    d_stellar_metal_mass = evolve_stellar_metallicity(
-        t, stellar_metal_mass, gas_mass, gas_metal_mass, **star_metals_args
-    )
-
-    return [d_gas_mass, d_star_mass, d_gas_metal_mass, d_stellar_metal_mass]
-
-
-params = {
-    "gas": {
-        "gas_accretion_rate": baryon_accretion_rate,
-        # "halo_mass": halo_mass,
-        # "past_sfr": past_sfr,
-        # "stellar_metallicity": z_star_val,
-        "kind": "delayed",
-    },
-    "star": {},  # evolve_star_formation only needs gas_mass
-    "gas_metals": {
-        "gas_accretion_rate": baryon_accretion_rate,
-        # "halo_mass": halo_mass,
-        # "past_sfr": past_sfr,
-        # "stellar_metallicity": z_star_val,
-        "kind": "delayed",
-    },
-    "star_metals": {},  # evolve_stellar_metallicity only needs gas and gas metals
-}
 
 # uv_choice = input("Do you want to include background UV suppression or not?")
 
 t_d = 2.015  # GYR; THIS SHOULD BE PUT AS A CHOICE FOR DELAYED/INSTANTANEOUS
 
-for i in range(1):
+for i in nb.prange(1):
     print(i)
     halo_mass, halo_mass_rate, redshift = read_trees()
+
+    halo_mass, halo_mass_rate, redshift = (
+        halo_mass[:100],
+        halo_mass_rate[:100],
+        redshift[:100],
+    )
     cosmic_time = utils.time_at_z(redshift)  # Gyr
 
     tsn = cosmic_time[0] + t_d  # Also a varying parameter
 
     gas_accretion_rate = baryon_accretion_rate(redshift, halo_mass, halo_mass_rate)
     gas_mass = np.array((omega_b / omega_m) * halo_mass)
+    gas_metals = np.zeros(len(cosmic_time))
 
-    sfr = np.zeros(len(cosmic_time))
     stars_mass = np.zeros(len(cosmic_time))
     stars_metals = np.zeros(len(cosmic_time))
 
-    gas_metals = np.zeros(len(cosmic_time))
+    stars_metals = np.zeros(len(cosmic_time))
 
     dust_mass = np.zeros(len(cosmic_time))
 
     for j in range(1, len(cosmic_time)):
-        print(j)
+        # print(j)
         t_span = [cosmic_time[j - 1], cosmic_time[j]]
 
         if cosmic_time[j] <= tsn:
@@ -239,15 +184,42 @@ for i in range(1):
                 args=(
                     gas_accretion_rate[j - 1],
                     halo_mass[j - 1],
-                    sfr[j - 1],
+                    stars_mass[j - 1],
                     stars_metals[j - 1],
                     "no",
                 ),
             )
+            gas_mass[j] = solution.y[0, -1]
 
             solution = solve_ivp(
                 star_formation_rate,
                 t_span,
-                [sfr[j - 1]],
+                [stars_mass[j - 1]],
                 args=(gas_mass[j - 1],),
             )
+            stars_mass[j] = solution.y[0, -1]
+
+            solution = solve_ivp(
+                evolve_gas_metals,
+                t_span,
+                [gas_metals[j - 1]],
+                args=(
+                    gas_mass[j - 1],
+                    gas_accretion_rate[j - 1],
+                    halo_mass[j - 1],
+                    stars_mass[j - 1],
+                    stars_metals[j - 1],
+                    "no",
+                ),
+            )
+            gas_metals[j] = solution.y[0, -1]
+
+            # solution = solve_ivp(
+            #     evolve_stars_metals,
+            #     t_span,
+            #     [stars_metals[j - 1]],
+            #     args=(gas_metals[j - 1],),
+            # )
+            # stars_metals[j] = solution.y[0, -1]
+
+print(gas_mass, sfr, gas_metals_rate, stars_metals_rate)
