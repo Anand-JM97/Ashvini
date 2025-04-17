@@ -11,7 +11,7 @@ import astropy.units as u
 
 from utils import omega_m, omega_b, omega_L, H_0
 
-from io import mdot_h, m_h
+# from io import mdot_h, m_h
 import utils as utils
 
 
