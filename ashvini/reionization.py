@@ -68,7 +68,7 @@ def epsilon(z):
     return epsilon
 
 
-def epsilon_uv(z_val, m_halo, mdot_halo):
+def uv_suppression(z_val, m_halo, mdot_halo):
     values = []
     for i in range(0, len(z_val)):
         if z_val[i] > 10:

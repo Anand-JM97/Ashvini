@@ -7,8 +7,9 @@ Code for star formation
 
 import numpy as np
 from astropy.cosmology import Planck15 as cosmo
-from astropy.cosmology import z_at_value
 import astropy.units as u
+
+import utils as utils
 
 H_0 = cosmo.H0  # in km / (Mpc s)
 H_0 = H_0.to(u.Gyr ** (-1))  # in 1/Gyr
@@ -24,6 +25,16 @@ def time_freefall(z):
     return 0.141 / (H_0 * np.sqrt((omega_m * ((1 + z) ** 3)) + omega_L)).value
 
 
-def star_formation_rate(m_gas, z):
-    m_dot_star_val = e_ff * m_gas / t_ff(z)
-    return m_dot_star_val
+def star_formation_rate(
+    t,  # cosmic time
+    y=0,  # sfr; dummy variable
+    gas_mass=0,
+):
+    """
+    Equation 2 in Menon et al 2024
+    """
+
+    redshift = utils.z_at_time(t)
+
+    star_formation_rate = (e_ff / time_freefall(redshift)) * gas_mass
+    return np.asarray(star_formation_rate)
