@@ -6,7 +6,7 @@ import astropy.units as u
 
 from scipy.integrate import solve_ivp
 
-from io import read_trees
+from utils import read_trees
 
 from utils import omega_m, omega_b, omega_L, H_0
 from metallicity import (
@@ -20,13 +20,11 @@ import reionization as rei
 import star_formation as sf
 import supernovae_feedback as snw
 
-
-# MERGER TREE INPUT
-
-# m_halo, m_dot_halo, redshift = read_trees()
+m_halo, m_dot_halo, redshift = read_trees()
+# print(type(m_halo), m_dot_halo, redshift)
 
 
-def cosmological_accretion_rate(z, m_h, m_dot_h, uv_suppression_check):
+def baryon_accretion_rate(redshift, halo_mass, halo_mass_dot, uv_suppression=True):
     """
     Function to obtain the cosmological baryonic accretion rate.
 
@@ -39,14 +37,13 @@ def cosmological_accretion_rate(z, m_h, m_dot_h, uv_suppression_check):
     Returns:
         Float: The baryonic cosmological accretion rate at z.
     """
+    gas_accretion_rate = (omega_b / omega_m) * halo_mass_dot
+    if uv_suppression:
+        gas_accretion_rate = gas_accretion_rate * rei.epsilon_uv(
+            redshift, halo_mass, halo_mass_dot
+        )
 
-    if uv_suppression_check == 1:
-        m_dot_cg_val = (omega_b / omega_m) * m_dot_h * rei.epsilon_uv(z, m_h, m_dot_h)
-
-    elif uv_suppression_check == 0:
-        m_dot_cg_val = (omega_b / omega_m) * m_dot_h
-
-    return m_dot_cg_val
+    return np.asarray(gas_accretion_rate)
 
 
 def evolve_gas(
@@ -54,8 +51,8 @@ def evolve_gas(
     gas_mass,  # gas mass
     gas_accretion_rate,
     halo_mass,
-    past_sfr,
-    stellar_metallicity,
+    past_sfr=0,
+    stellar_metallicity=0,
     kind="delayed",
 ):
     """
@@ -76,12 +73,13 @@ def evolve_gas(
         - present_sfr
         - snw.eta(redshift, halo_mass, stellar_metallicity) * wind_sfr
     )
-    return gas_mass_evolution_rate
+    # print(gas_mass_evolution_rate)
+    return np.asarray(gas_mass_evolution_rate)
 
 
-def evolve_star_formation(
+def star_formation_rate(
     t,  # cosmic time
-    y,  # stellar mass
+    y,
     gas_mass,
 ):
     """
@@ -91,7 +89,7 @@ def evolve_star_formation(
     redshift = utils.z_at_time(t)
 
     star_formation_rate = (sf.e_ff / sf.time_freefall(redshift)) * gas_mass
-    return star_formation_rate
+    return np.asarray(star_formation_rate)
 
 
 def evolve_wind_mass(
@@ -170,7 +168,7 @@ def evolve_galaxies(t, state, params):
     star_mass = state[1]
     gas_metal_mass = state[2]
     stellar_metal_mass = state[3]
-    
+
     # Extract relevant args for each subfunction
     gas_args = params["gas"]
     star_args = params["star"]
@@ -181,223 +179,75 @@ def evolve_galaxies(t, state, params):
     d_gas_mass = evolve_gas(t, gas_mass, **gas_args)
     d_star_mass = evolve_star_formation(t, star_mass, gas_mass, **star_args)
     d_gas_metal_mass = evolve_gas_metals(t, gas_metal_mass, gas_mass, **gas_metals_args)
-    d_stellar_metal_mass = evolve_stellar_metallicity(t, stellar_metal_mass, gas_mass, gas_metal_mass, **star_metals_args)
+    d_stellar_metal_mass = evolve_stellar_metallicity(
+        t, stellar_metal_mass, gas_mass, gas_metal_mass, **star_metals_args
+    )
 
     return [d_gas_mass, d_star_mass, d_gas_metal_mass, d_stellar_metal_mass]
 
 
 params = {
     "gas": {
-        "gas_accretion_rate": gas_accretion_rate[j],
-        "halo_mass": halo_mass[j],
-        "past_sfr": past_sfr[j],
-        "stellar_metallicity": z_star_val,
-        "kind": "delayed"
+        "gas_accretion_rate": baryon_accretion_rate,
+        # "halo_mass": halo_mass,
+        # "past_sfr": past_sfr,
+        # "stellar_metallicity": z_star_val,
+        "kind": "delayed",
     },
     "star": {},  # evolve_star_formation only needs gas_mass
     "gas_metals": {
-        "gas_accretion_rate": gas_accretion_rate[j],
-        "halo_mass": halo_mass[j],
-        "past_sfr": past_sfr[j],
-        "stellar_metallicity": z_star_val,
-        "kind": "delayed"
+        "gas_accretion_rate": baryon_accretion_rate,
+        # "halo_mass": halo_mass,
+        # "past_sfr": past_sfr,
+        # "stellar_metallicity": z_star_val,
+        "kind": "delayed",
     },
-    "star_metals": {}  # evolve_stellar_metallicity only needs gas and gas metals
+    "star_metals": {},  # evolve_stellar_metallicity only needs gas and gas metals
 }
 
-start = 0
-stop = 100
-check = 86
+# uv_choice = input("Do you want to include background UV suppression or not?")
 
-no = 10  # HALO MASS POWER VALUE
+t_d = 2.015  # GYR; THIS SHOULD BE PUT AS A CHOICE FOR DELAYED/INSTANTANEOUS
 
-uv_choice = input("Do you want to include background UV suppression or not?")
-
-t_d = 0.015  # GYR; THIS SHOULD BE PUT AS A CHOICE FOR DELAYED/INSTANTANEOUS
-
-
-# DELAYED FEEDBACK
-
-for i in range(start, stop, 1):
-    redshift = np.array([])
-    halo_mass = np.array([])
-    halo_mass_rate = np.array([])
+for i in range(1):
     print(i)
-
-    redshift = np.loadtxt(
-        f"C:/Users/Anand Menon/Documents/ICRAR Stuff/Data Sets/Sorted Data/mh{no}_data/Redshifts/redshift_{i}.txt",
-        delimiter=" ",
-    )
-    halo_mass = np.loadtxt(
-        f"C:/Users/Anand Menon/Documents/ICRAR Stuff/Data Sets/Sorted Data/mh{no}_data/Halo Mass/halo_mass_{i}.txt",
-        delimiter=" ",
-    )
-    halo_mass_rate = np.loadtxt(
-        f"C:/Users/Anand Menon/Documents/ICRAR Stuff/Data Sets/Sorted Data/mh{no}_data/Halo Mass Rate/halo_mass_rate_{i}.txt",
-        delimiter=" ",
-    )
-
-    cosmic_time = t(redshift)
-    h = (cosmic_time[len(cosmic_time) - 1] - cosmic_time[0]) / len(cosmic_time)
+    halo_mass, halo_mass_rate, redshift = read_trees()
+    cosmic_time = utils.time_at_z(redshift)  # Gyr
 
     tsn = cosmic_time[0] + t_d  # Also a varying parameter
 
-    gas_accretion_rate = cosmological_accretion_rate(
-        redshift, halo_mass, halo_mass_rate
-    )  # TODO: UV suppression check
+    gas_accretion_rate = baryon_accretion_rate(redshift, halo_mass, halo_mass_rate)
+    gas_mass = np.array((omega_b / omega_m) * halo_mass)
 
-    ini_m_gas = [0.0]  # [(omega_b / omega_m) * halo_mass]  # TODO:
-    ini_m_star = [0.0]
+    sfr = np.zeros(len(cosmic_time))
+    stars_mass = np.zeros(len(cosmic_time))
+    stars_metals = np.zeros(len(cosmic_time))
 
-    ini_m_z_gas = [0.0]
-    ini_m_z_star = [0.0]
+    gas_metals = np.zeros(len(cosmic_time))
 
-    ini_m_dust = [0.0]
-
-    m_g_val_1 = []
-    m_star_val_1 = []
-    m_z_g_val_1 = []
-    m_z_star_val_1 = []
-    m_dust_val_1 = []
-
-    m_dot_star_vals = []
-
-    z_star_val = 0.0
-
-    f_vals = []
-
-    k = 0
+    dust_mass = np.zeros(len(cosmic_time))
 
     for j in range(1, len(cosmic_time)):
+        print(j)
         t_span = [cosmic_time[j - 1], cosmic_time[j]]
 
         if cosmic_time[j] <= tsn:
             solution = solve_ivp(
-                evolve_gas, t_span, ini_m_gas, args=[gas_accretion_rate[j-1], halo_mass[j-1], past_sfr[j-1], stellar_metallicity[j-1], kind="no?"]
-            )
-            m_g = solution.y[0][len(solution.y[0]) - 1]
-
-            solution = solve_ivp(
-                diff_eqn_star_1, t_span, ini_m_star, args=[ini_m_gas[0]], max_step=h
-            )
-            m_s = solution.y[0][len(solution.y[0]) - 1]
-
-            solution = solve_ivp(
-                diff_eqn_zgas_1,
+                evolve_gas,
                 t_span,
-                ini_m_z_gas,
-                args=[ini_m_gas[0], m_dot_cg_val[j]],
-                max_step=h,
+                [gas_mass[j - 1]],
+                args=(
+                    gas_accretion_rate[j - 1],
+                    halo_mass[j - 1],
+                    sfr[j - 1],
+                    stars_metals[j - 1],
+                    "no",
+                ),
             )
-            m_z_g = solution.y[0][len(solution.y[0]) - 1]
 
             solution = solve_ivp(
-                diff_eqn_zstar_2,
+                star_formation_rate,
                 t_span,
-                ini_m_z_star,
-                args=[ini_m_gas[0], ini_m_z_gas[0]],
-                max_step=h,
+                [sfr[j - 1]],
+                args=(gas_mass[j - 1],),
             )
-            m_z_s = solution.y[0][len(solution.y[0]) - 1]
-
-        elif cosmic_time[j] > tsn:
-            solution = solve_ivp(
-                diff_eqn_gas_2,
-                t_span,
-                ini_m_gas,
-                args=[m_dot_cg_val[j], halo_mass[j], m_dot_star_vals[k], z_star_val],
-                max_step=h,
-            )
-            m_g = solution.y[0][len(solution.y[0]) - 1]
-
-            solution = solve_ivp(
-                diff_eqn_star_2, t_span, ini_m_star, args=[ini_m_gas[0]], max_step=h
-            )
-            m_s = solution.y[0][len(solution.y[0]) - 1]
-
-            solution = solve_ivp(
-                diff_eqn_zgas_2,
-                t_span,
-                ini_m_z_gas,
-                args=[
-                    ini_m_gas[0],
-                    m_dot_cg_val[j],
-                    halo_mass[j],
-                    m_dot_star_vals[k],
-                    z_star_val,
-                ],
-                max_step=h,
-            )
-            m_z_g = solution.y[0][len(solution.y[0]) - 1]
-
-            solution = solve_ivp(
-                diff_eqn_zstar_2,
-                t_span,
-                ini_m_z_star,
-                args=[ini_m_gas[0], ini_m_z_gas[0]],
-                max_step=h,
-            )
-            m_z_s = solution.y[0][len(solution.y[0]) - 1]
-
-            k = k + 1
-
-        ini_m_gas = [m_g]
-        ini_m_star = [m_s]
-        ini_m_z_gas = [m_z_g]
-        ini_m_z_star = [m_z_s]
-
-        if ini_m_gas[0] < 0.0:
-            ini_m_gas[0] = 0.0
-            ini_m_z_gas[0] = 0.0
-
-        if ini_m_star[0] < 0.0:
-            ini_m_star[0] = 0.0
-            ini_m_z_star[0] = 0.0
-
-        if ini_m_z_gas[0] < 0.0:
-            ini_m_z_gas[0] = 0.0
-
-        if ini_m_z_star[0] < 0.0:
-            ini_m_z_star[0] = 0.0
-
-        if ini_m_dust[0] < 0.0:
-            ini_m_dust[0] = 0.0
-
-        if ini_m_star[0] == 0.0:
-            z_star_val = 0.0
-
-        elif ini_m_star[0] > 0.0:
-            z_star_val = ini_m_z_star[0] / ini_m_star[0]
-
-        m_dot_star_val = (sf.e_ff / sf.t_ff(redshift[j])) * ini_m_gas[0]
-        m_dot_star_vals = np.append(m_dot_star_vals, [m_dot_star_val])
-
-        m_g_val_1 = np.append(m_g_val_1, ini_m_gas)
-        m_star_val_1 = np.append(m_star_val_1, ini_m_star)
-        m_z_g_val_1 = np.append(m_z_g_val_1, ini_m_z_gas)
-        m_z_star_val_1 = np.append(m_z_star_val_1, ini_m_z_star)
-        m_dust_val_1 = np.append(m_dust_val_1, ini_m_dust)
-
-    print(len(m_g_val_1))
-    print(m_z_star_val_1)
-
-    np.savetxt(
-        f"C:/Users/Anand Menon/Documents/ICRAR Stuff/Results/No UV Delay/mh{no}_data/gas/tree_{i}.txt",
-        m_g_val_1,
-        delimiter=" ",
-    )
-    np.savetxt(
-        f"C:/Users/Anand Menon/Documents/ICRAR Stuff/Results/No UV Delay/mh{no}_data/star/tree_{i}.txt",
-        m_star_val_1,
-        delimiter=" ",
-    )
-    np.savetxt(
-        f"C:/Users/Anand Menon/Documents/ICRAR Stuff/Results/No UV Delay/mh{no}_data/z_gas/tree_{i}.txt",
-        m_z_g_val_1,
-        delimiter=" ",
-    )
-    np.savetxt(
-        f"C:/Users/Anand Menon/Documents/ICRAR Stuff/Results/No UV Delay/mh{no}_data/z_star/tree_{i}.txt",
-        m_z_star_val_1,
-        delimiter=" ",
-    )

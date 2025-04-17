@@ -21,7 +21,7 @@ e_ff = 0.015
 
 
 def time_freefall(z):
-    return 0.141 / (H_0 * np.sqrt((omega_m * ((1 + z) ** 3)) + omega_L))
+    return 0.141 / (H_0 * np.sqrt((omega_m * ((1 + z) ** 3)) + omega_L)).value
 
 
 def star_formation_rate(m_gas, z):
