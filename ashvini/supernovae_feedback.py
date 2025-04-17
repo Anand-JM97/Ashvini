@@ -6,10 +6,6 @@ Code for supernova feedback
 """
 
 import numpy as np
-from astropy.cosmology import Planck15 as cosmo
-import astropy.units as u
-
-from utils import omega_m, omega_b, omega_L, H_0
 
 import utils as utils
 import star_formation as sf
@@ -26,7 +22,6 @@ def metallicity_function(stellar_metallicity, m=0.1, s=0.01, a=1, b=0.25):
 
 
 def eta(z, m_halo):
-    print(z, m_halo)
     eta_p = (
         epsilon_p
         * pi_fid

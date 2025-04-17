@@ -60,14 +60,6 @@ def evolve_gas(
     present_sfr = star_formation_rate(t, gas_mass=gas_mass)
     wind_sfr = past_sfr
 
-    print(
-        redshift,
-        present_sfr,
-        past_sfr,
-        gas_accretion_rate,
-        halo_mass,
-        stellar_metallicity,
-    )
     if kind == "no":
         wind_sfr = 0
     if kind == "instantaneous":
@@ -76,13 +68,11 @@ def evolve_gas(
     gas_mass_evolution_rate = (
         gas_accretion_rate - present_sfr - snw.eta(redshift, halo_mass) * wind_sfr
     )
-    # print(gas_mass_evolution_rate)
     return np.asarray(gas_mass_evolution_rate)
 
 
 def evolve_wind_mass(
     t,  # cosmic time
-    y,  # wind mass; dummy variable
     gas_mass,
     halo_mass,
     stellar_metallicity,
@@ -139,7 +129,8 @@ def evolve_gas_metals(
 def evolve_stars_metals(t, y, gas_metal_mass):
     # TODO: Seems like we can simply call starformation_rate here
     redshift = utils.z_at_time(t)
-    stars_metals_rate = sf.e_ff / sf.time_freefall(redshift) * gas_metal_mass
+    # stars_metals_rate = sf.e_ff / sf.time_freefall(redshift) * gas_metal_mass
+    stars_metals_rate = star_formation_rate(t, gas_mass=gas_metal_mass)
 
     return stars_metals_rate
 
@@ -192,10 +183,9 @@ for i in nb.prange(1):
             gas_mass[j] = solution.y[0, -1]
 
             solution = solve_ivp(
-                star_formation_rate,
+                lambda t, y: [star_formation_rate(t, gas_mass[j - 1])],
                 t_span,
                 [stars_mass[j - 1]],
-                args=(gas_mass[j - 1],),
             )
             stars_mass[j] = solution.y[0, -1]
 
@@ -214,12 +204,12 @@ for i in nb.prange(1):
             )
             gas_metals[j] = solution.y[0, -1]
 
-            # solution = solve_ivp(
-            #     evolve_stars_metals,
-            #     t_span,
-            #     [stars_metals[j - 1]],
-            #     args=(gas_metals[j - 1],),
-            # )
-            # stars_metals[j] = solution.y[0, -1]
+            solution = solve_ivp(
+                evolve_stars_metals,
+                t_span,
+                [stars_metals[j - 1]],
+                args=(gas_metals[j - 1],),
+            )
+            stars_metals[j] = solution.y[0, -1]
 
-print(gas_mass, sfr, gas_metals_rate, stars_metals_rate)
+print(gas_mass, stars_mass, gas_metals, stars_metals)

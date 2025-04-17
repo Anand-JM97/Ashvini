@@ -27,8 +27,7 @@ def time_freefall(z):
 
 def star_formation_rate(
     t,  # cosmic time
-    y=0,  # sfr; dummy variable
-    gas_mass=0,
+    gas_mass,
 ):
     """
     Equation 2 in Menon et al 2024
