@@ -19,7 +19,7 @@ import supernovae_feedback as sn
 
 from star_formation import star_formation_rate
 
-m_halo, m_dot_halo, redshift = read_trees()
+m_halo, m_dot_halo, redshift = read_trees()     #ARGUMENT(S)?
 
 
 def baryon_accretion_rate(redshift, halo_mass, halo_mass_dot, uv_suppression=True):
@@ -47,8 +47,8 @@ def evolve_gas(
     gas_mass,  # gas mass
     gas_accretion_rate,
     halo_mass,
+    stellar_metallicity,  # TODO: not being used; check this- used for metal-dependent feedback
     past_sfr=0,
-    stellar_metallicity=0,  # TODO: not being used; check this
     kind="delayed",
 ):
     """
@@ -65,7 +65,7 @@ def evolve_gas(
         wind_sfr = present_sfr
 
     gas_mass_evolution_rate = (
-        gas_accretion_rate - present_sfr - sn.eta(redshift, halo_mass) * wind_sfr
+        gas_accretion_rate - present_sfr - sn.eta(redshift, halo_mass, stellar_metallicity) * wind_sfr
     )
     return np.asarray(gas_mass_evolution_rate)
 
@@ -93,8 +93,8 @@ def evolve_wind_mass(
 
 def evolve_gas_metals(
     t,
-    y,  # TODO: what is y in this function?
-    gas_metals,
+    #y,  # TODO: what is y in this function?- gas metal mass.
+    gas_metal_mass,
     gas_mass,
     gas_accretion_rate,
     halo_mass,
@@ -113,10 +113,10 @@ def evolve_gas_metals(
 
     gas_metals_rate = (
         (IGM_metallicity * gas_accretion_rate)  # Enriched gas accreting from IGM
-        - (y * present_sfr / gas_mass)  # Removal from ISM during star formation
+        - (gas_metal_mass * present_sfr / gas_mass)  # Removal from ISM during star formation
         + (metallicity_yield * wind_sfr)  # Delayed enrichment of ISM by dying stars
         - (
-            sn.eta(redshift, halo_mass) * (gas_metals / gas_mass) * wind_sfr
+            sn.eta(redshift, halo_mass) * (gas_metal_mass / gas_mass) * wind_sfr
         )  # Delayed removal from ISM by SN feedback
     )
 
