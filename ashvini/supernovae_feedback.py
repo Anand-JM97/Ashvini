@@ -21,12 +21,13 @@ def metallicity_function(stellar_metallicity, m=0.1, s=0.01, a=1, b=0.25):
     return function_value
 
 
-def eta(z, m_halo):
+def eta(redshift, halo_mass, stellar_metallicity):
     eta_p = (
         epsilon_p
         * pi_fid
-        * (((10**11.5) / m_halo) ** (1 / 3))
-        * ((9 / (1 + z)) ** (1 / 2))
+        * ((10**11.5) / halo_mass ** (1 / 3))
+        * ((9 / (1 + redshift)) ** (1 / 2))
+        * metallicity_function(stellar_metallicity)
     )
     return eta_p
 
