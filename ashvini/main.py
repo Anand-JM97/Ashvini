@@ -13,6 +13,7 @@ import reionization as reion
 import supernovae_feedback as sn
 
 from star_formation import star_formation_rate
+from supernovae_feedback import wind_mass_evolution_rate
 
 m_halo, m_dot_halo, redshift = read_trees()
 
@@ -62,7 +63,7 @@ def evolve_gas(
     gas_mass_evolution_rate = (
         gas_accretion_rate
         - present_sfr
-        - sn.eta(redshift, halo_mass, stellar_metallicity) * wind_sfr
+        - sn.eta(redshift, halo_mass, stellar_metallicity) * wind_sfr  # - wind_mass_evolution_rate(redshift, gas_mass, halo_mass, wind_sfr, stellar_metallicity)
     )
     return np.asarray(gas_mass_evolution_rate)
 
