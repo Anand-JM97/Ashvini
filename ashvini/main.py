@@ -67,29 +67,6 @@ def evolve_gas(
     return np.asarray(gas_mass_evolution_rate)
 
 
-def evolve_wind_mass(
-    t,  # cosmic time
-    gas_mass,
-    halo_mass,
-    stellar_metallicity,
-):
-    """
-    Equation 3 in Menon et al 2024
-    """
-
-    redshift = utils.z_at_time(t)
-
-    sfr = star_formation_rate(t, gas_mass=gas_mass)
-
-    wind_mass_rate = (
-        sn.metallicity_function(stellar_metallicity)
-        * sn.eta(redshift, halo_mass, stellar_metallicity)
-        * sfr
-    )
-
-    return wind_mass_rate
-
-
 def evolve_gas_metals(
     t,
     gas_metal_mass,
@@ -126,9 +103,9 @@ def evolve_gas_metals(
 
 
 def evolve_stars_metals(t, gas_metals, gas_mass):
-    # TODO: Seems like we can simply call starformation_rate here
+    # TODO: We can simply call starformation_rate here- Should SFR use gas_metals as argument instead of gas_mass?
     stars_metals_rate = (
-        star_formation_rate(t, gas_mass=gas_mass) * gas_metals / gas_mass
+        star_formation_rate(t, gas_mass=gas_mass) * gas_metals / gas_mass  # Heavy elements captured during star formation
     )
     return stars_metals_rate
 
