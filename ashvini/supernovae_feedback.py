@@ -32,7 +32,7 @@ def eta(redshift, halo_mass, stellar_metallicity):
     return eta_p
 
 
-def evolve_wind_mass(redshift, gas_mass, halo_mass, star_formation_rate_for_winds, stellar_metallicity):
+def wind_mass_evolution_rate(redshift, gas_mass, halo_mass, star_formation_rate_for_winds, stellar_metallicity):
     wind_mass_rate = (
         metallicity_function(stellar_metallicity)
         * eta(redshift, halo_mass)
