@@ -16,6 +16,6 @@ import utils as utils
 
 # Metallicity parameters
 
-IGM_metallicity = 1e-3  # units?
+IGM_metallicity = 1e-3  # Z_solar units
 metallicity_yield = 0.06
 wind_metallicity_enhancement_factor = 1
