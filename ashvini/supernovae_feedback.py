@@ -32,10 +32,10 @@ def eta(redshift, halo_mass, stellar_metallicity):
     return eta_p
 
 
-def m_dot_wind(m_gas, z, m_halo, stellar_metallicity):
-    m_dot_wind_val = (
+def evolve_wind_mass(redshift, gas_mass, halo_mass, star_formation_rate_for_winds, stellar_metallicity):
+    wind_mass_rate = (
         metallicity_function(stellar_metallicity)
-        * eta(z, m_halo)
-        * sf.star_formation_rate(m_gas, z, m_halo)
+        * eta(redshift, halo_mass)
+        * star_formation_rate_for_winds
     )
-    return m_dot_wind_val
+    return wind_mass_rate
