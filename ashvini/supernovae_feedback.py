@@ -21,7 +21,7 @@ def metallicity_function(stellar_metallicity, m=0.1, s=0.01, a=1, b=0.25):
     return function_value
 
 
-def mass_loading(redshift, halo_mass, stellar_metallicity):
+def mass_loading_factor(redshift, halo_mass, stellar_metallicity):
     mass_loading_factor = (
         epsilon_p
         * pi_fid
@@ -37,7 +37,7 @@ def wind_mass_evolution_rate(
 ):
     wind_mass_rate = (
         metallicity_function(stellar_metallicity)
-        * mass_loading(redshift, halo_mass)
+        * mass_loading_factor(redshift, halo_mass)
         * star_formation_rate_for_winds
     )
     return wind_mass_rate
