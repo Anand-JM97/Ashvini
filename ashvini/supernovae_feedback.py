@@ -37,7 +37,7 @@ def wind_mass_evolution_rate(
 ):
     wind_mass_rate = (
         metallicity_function(stellar_metallicity)
-        * eta(redshift, halo_mass)
+        * mass_loading(redshift, halo_mass)
         * star_formation_rate_for_winds
     )
     return wind_mass_rate
