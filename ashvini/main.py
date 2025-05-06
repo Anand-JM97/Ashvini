@@ -63,7 +63,8 @@ def evolve_gas(
     gas_mass_evolution_rate = (
         gas_accretion_rate
         - present_sfr
-        - sn.eta(redshift, halo_mass, stellar_metallicity) * wind_sfr  # - wind_mass_evolution_rate(redshift, gas_mass, halo_mass, wind_sfr, stellar_metallicity)
+        - sn.mass_loading(redshift, halo_mass, stellar_metallicity)
+        * wind_sfr  # - wind_mass_evolution_rate(redshift, gas_mass, halo_mass, wind_sfr, stellar_metallicity)
     )
     return np.asarray(gas_mass_evolution_rate)
 
@@ -94,7 +95,7 @@ def evolve_gas_metals(
         )  # Removal from ISM during star formation
         + (metallicity_yield * wind_sfr)  # Delayed enrichment of ISM by dying stars
         - (
-            sn.eta(redshift, halo_mass, stellar_metallicity)
+            sn.mass_loading(redshift, halo_mass, stellar_metallicity)
             * (gas_metal_mass / gas_mass)
             * wind_sfr
         )  # Delayed removal from ISM by SN feedback
@@ -106,7 +107,9 @@ def evolve_gas_metals(
 def evolve_stars_metals(t, gas_metals, gas_mass):
     # TODO: We can simply call starformation_rate here- Should SFR use gas_metals as argument instead of gas_mass?
     stars_metals_rate = (
-        star_formation_rate(t, gas_mass=gas_mass) * gas_metals / gas_mass  # Heavy elements captured during star formation
+        star_formation_rate(t, gas_mass=gas_mass)
+        * gas_metals
+        / gas_mass  # Heavy elements captured during star formation
     )
     return stars_metals_rate
 
@@ -119,11 +122,12 @@ for i in np.arange(1):
     print(i)
     halo_mass, halo_mass_rate, redshift = read_trees()
 
-    # TODO: Taking only the first 100 values for testing
+    # TODO: Taking only the first Ntest values for testing
+    Ntest = 20000
     halo_mass, halo_mass_rate, redshift = (
-        halo_mass[:100],
-        halo_mass_rate[:100],
-        redshift[:100],
+        halo_mass[:Ntest],
+        halo_mass_rate[:Ntest],
+        redshift[:Ntest],
     )
     cosmic_time = utils.time_at_z(redshift)  # Gyr
 
@@ -131,6 +135,7 @@ for i in np.arange(1):
 
     gas_accretion_rate = baryon_accretion_rate(redshift, halo_mass, halo_mass_rate)
     gas_mass = np.array((omega_b / omega_m) * halo_mass)
+    gas_mass = np.zeros(len(cosmic_time))
     gas_metals = np.zeros(len(cosmic_time))
 
     stars_mass = np.zeros(len(cosmic_time))
@@ -154,7 +159,7 @@ for i in np.arange(1):
                     halo_mass[j - 1],
                     stars_mass[j - 1],
                     stars_metals[j - 1],
-                    "no",
+                    "delayed",
                 ),
             )
             gas_mass[j] = solution.y[0, -1]
@@ -176,7 +181,7 @@ for i in np.arange(1):
                     halo_mass[j - 1],
                     stars_mass[j - 1],
                     stars_metals[j - 1],
-                    "no",
+                    "delayed",
                 ),
             )
             gas_metals[j] = solution.y[0, -1]
@@ -190,4 +195,13 @@ for i in np.arange(1):
             )
             stars_metals[j] = solution.y[0, -1]
 
-print(gas_mass, stars_mass, gas_metals, stars_metals)
+# print(gas_mass, stars_mass, gas_metals, stars_metals)
+
+dir_out = "../data/outputs/"
+np.savez(
+    dir_out + f"first_{Ntest}.npz",
+    gas_mass=gas_mass,
+    stars_mass=stars_mass,
+    gas_metals=gas_metals,
+    stars_metals=stars_metals,
+)
