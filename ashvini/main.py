@@ -63,7 +63,7 @@ def evolve_gas(
     gas_mass_evolution_rate = (
         gas_accretion_rate
         - present_sfr
-        - sn.mass_loading(redshift, halo_mass, stellar_metallicity)
+        - sn.mass_loading_factor(redshift, halo_mass, stellar_metallicity)
         * wind_sfr  # - wind_mass_evolution_rate(redshift, gas_mass, halo_mass, wind_sfr, stellar_metallicity)
     )
     return np.asarray(gas_mass_evolution_rate)
@@ -95,7 +95,7 @@ def evolve_gas_metals(
         )  # Removal from ISM during star formation
         + (metallicity_yield * wind_sfr)  # Delayed enrichment of ISM by dying stars
         - (
-            sn.mass_loading(redshift, halo_mass, stellar_metallicity)
+            sn.mass_loading_factor(redshift, halo_mass, stellar_metallicity)
             * (gas_metal_mass / gas_mass)
             * wind_sfr
         )  # Delayed removal from ISM by SN feedback
