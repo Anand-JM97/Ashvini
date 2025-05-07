@@ -144,8 +144,9 @@ for i in np.arange(1):
     gas_metals = np.zeros(len(cosmic_time))
 
     stars_mass = np.zeros(len(cosmic_time))
-    star_formation_rate_values = np.zeros(len(cosmic_time))
     stars_metals = np.zeros(len(cosmic_time))
+    star_formation_rate_values = np.zeros(len(cosmic_time))
+
     
     stellar_metallicity = np.zeros(len(cosmic_time))
     
@@ -212,7 +213,9 @@ for i in np.arange(1):
             )
             stars_metals[j] = solution.y[0, -1]
         
+        star_formation_rate_values = star_formation_rate(cosmic_time[j], gas_mass[j])
         stellar_metallicity[j] = stars_metals[j] / stars_mass[j]
+        
         
 # print(gas_mass, stars_mass, gas_metals, stars_metals)
 
