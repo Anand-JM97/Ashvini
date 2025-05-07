@@ -44,7 +44,7 @@ def evolve_gas(
     gas_accretion_rate,
     halo_mass,
     stellar_metallicity,
-    past_sfr=0,
+    past_sfr,
     kind="delayed",
 ):
     """
@@ -144,6 +144,7 @@ for i in np.arange(1):
     gas_metals = np.zeros(len(cosmic_time))
 
     stars_mass = np.zeros(len(cosmic_time))
+    star_formation_rate_values = np.zeros(len(cosmic_time))
     stars_metals = np.zeros(len(cosmic_time))
     
     stellar_metallicity = np.zeros(len(cosmic_time))
@@ -155,6 +156,7 @@ for i in np.arange(1):
         t_span = [cosmic_time[j - 1], cosmic_time[j]]
 
         if cosmic_time[j] <= tsn:
+            
             solution = solve_ivp(
                 evolve_gas,
                 t_span,
@@ -164,7 +166,7 @@ for i in np.arange(1):
                     halo_mass[j - 1],
                     stellar_metallicity[j - 1],
                     stars_mass[j - 1],
-                    "delayed",
+                    "no",
                 ),
             )
             
