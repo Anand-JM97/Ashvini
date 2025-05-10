@@ -122,6 +122,7 @@ t_d = 2.015  # GYR; THIS SHOULD BE PUT AS A CHOICE FOR DELAYED/INSTANTANEOUS
 
 for i in np.arange(1):
     print(i)
+    delay_counter=0
     
     halo_mass, halo_mass_rate, redshift = read_trees()
 
@@ -166,7 +167,7 @@ for i in np.arange(1):
                     gas_accretion_rate[j - 1],
                     halo_mass[j - 1],
                     stellar_metallicity[j - 1],
-                    stars_mass[j - 1],
+                    0.0,
                     "no",
                 ),
             )
