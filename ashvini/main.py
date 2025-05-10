@@ -211,6 +211,56 @@ for i in np.arange(1):
             )
             stars_metals[j] = solution.y[0, -1]
         
+        elif cosmic_time[j] > tsn:
+            
+            solution = solve_ivp(
+                evolve_gas,
+                t_span,
+                [gas_mass[j - 1]],
+                args=(                                                      
+                    gas_accretion_rate[j - 1],
+                    halo_mass[j - 1],
+                    stellar_metallicity[j - 1],
+                    0.0,
+                ),
+            )
+            
+            gas_mass[j] = solution.y[0, -1]
+
+            solution = solve_ivp(
+                lambda t, y: [star_formation_rate(t, gas_mass[j - 1])],
+                t_span,
+                [stars_mass[j - 1]],
+            )
+            stars_mass[j] = solution.y[0, -1]
+
+            solution = solve_ivp(
+                evolve_gas_metals,
+                t_span,
+                [gas_metals[j - 1]],
+                args=(
+                    gas_mass[j - 1],
+                    gas_accretion_rate[j - 1],
+                    halo_mass[j - 1],
+                    0.0,
+                    stellar_metallicity[j - 1],
+                    "no",
+                ),
+            )
+            gas_metals[j] = solution.y[0, -1]
+            
+
+            solution = solve_ivp(
+                lambda t, y: [
+                    evolve_stars_metals(t, gas_metals[j - 1], gas_mass[j - 1])
+                ],
+                t_span,
+                [stars_metals[j - 1]],
+            )
+            stars_metals[j] = solution.y[0, -1]
+            
+            delay_counter += 1
+            
         star_formation_rate_values = star_formation_rate(cosmic_time[j], gas_mass[j])
         stellar_metallicity[j] = stars_metals[j] / stars_mass[j]
         
