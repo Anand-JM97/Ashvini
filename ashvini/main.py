@@ -105,7 +105,12 @@ def evolve_gas_metals(
     return gas_metals_rate
 
 
-def evolve_stars_metals(t, gas_metals, gas_mass):
+def evolve_stars_metals(
+    t,
+    star_metal_mass,
+    gas_metals,
+    gas_mass,
+):
     # TODO: We can simply call starformation_rate here- Should SFR use gas_metals as argument instead of gas_mass?
     stars_metals_rate = (
         star_formation_rate(t, gas_mass=gas_mass)
@@ -209,6 +214,7 @@ for i in np.arange(1):
         star_formation_rate_values = star_formation_rate(cosmic_time[j], gas_mass[j])
         stellar_metallicity[j] = stars_metals[j] / stars_mass[j]
         
+        # TODO: elif for t > tsn
         
 # print(gas_mass, stars_mass, gas_metals, stars_metals)
 
