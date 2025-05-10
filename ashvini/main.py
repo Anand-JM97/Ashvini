@@ -172,15 +172,6 @@ for i in np.arange(1):
                 ),
             )
             
-            '''
-            gas_accretion_rate,
-            halo_mass,
-            stellar_metallicity,
-            past_sfr=0,
-            kind="delayed",
-            
-            '''
-            
             gas_mass[j] = solution.y[0, -1]
 
             solution = solve_ivp(
@@ -198,12 +189,13 @@ for i in np.arange(1):
                     gas_mass[j - 1],
                     gas_accretion_rate[j - 1],
                     halo_mass[j - 1],
-                    stars_mass[j - 1],
-                    stars_metals[j - 1],
-                    "delayed",
+                    0.0,
+                    stellar_metallicity[j - 1],
+                    "no",
                 ),
             )
             gas_metals[j] = solution.y[0, -1]
+            
 
             solution = solve_ivp(
                 lambda t, y: [
