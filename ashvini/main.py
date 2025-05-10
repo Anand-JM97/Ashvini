@@ -76,8 +76,8 @@ def evolve_gas_metals(
     gas_mass,
     gas_accretion_rate,
     halo_mass,
-    past_sfr,
     stellar_metallicity,
+    past_sfr,
     kind="delayed",
 ):
     redshift = utils.z_at_time(t)
@@ -194,8 +194,8 @@ for i in np.arange(1):
                     gas_mass[j - 1],
                     gas_accretion_rate[j - 1],
                     halo_mass[j - 1],
-                    0.0,
                     stellar_metallicity[j - 1],
+                    0.0,
                     "no",
                 ),
             )
@@ -242,9 +242,8 @@ for i in np.arange(1):
                     gas_mass[j - 1],
                     gas_accretion_rate[j - 1],
                     halo_mass[j - 1],
-                    0.0,
                     stellar_metallicity[j - 1],
-                    "no",
+                    0.0,
                 ),
             )
             gas_metals[j] = solution.y[0, -1]
