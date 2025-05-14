@@ -252,7 +252,12 @@ for i in np.arange(1):
             delay_counter += 1
 
         star_formation_rate_values = star_formation_rate(cosmic_time[j], gas_mass[j])
-        stellar_metallicity[j] = stars_metals[j] / stars_mass[j]
+
+        if stars_mass[j] > 0:
+            stellar_metallicity[j] = stars_metals[j] / stars_mass[j]
+        else:
+            stellar_metallicity[j] = 0
+        # stellar_metallicity[j] = stars_metals[j] / stars_mass[j]
 
 
 # print(gas_mass, stars_mass, gas_metals, stars_metals)
