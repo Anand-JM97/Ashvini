@@ -18,6 +18,7 @@ def metallicity_function(stellar_metallicity, m=0.1, s=0.01, a=1, b=0.25):
     function_value = (
         np.exp(-np.logaddexp(0, -(stellar_metallicity - m) / s)) * (b - a) + a
     )
+    function_value = 1
     return function_value
 
 
