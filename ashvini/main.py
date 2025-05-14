@@ -15,8 +15,6 @@ import supernovae_feedback as sn
 from star_formation import star_formation_rate
 from supernovae_feedback import wind_mass_evolution_rate
 
-m_halo, m_dot_halo, redshift = read_trees()
-
 
 def baryon_accretion_rate(redshift, halo_mass, halo_mass_dot, uv_suppression=True):
     """
@@ -54,7 +52,6 @@ def evolve_gas(
     redshift = utils.z_at_time(t)
     present_sfr = star_formation_rate(t, gas_mass=gas_mass)
     wind_sfr = past_sfr
-    
 
     if kind == "no":
         wind_sfr = 0
@@ -107,7 +104,6 @@ def evolve_gas_metals(
 
 def evolve_stars_metals(
     t,
-    star_metal_mass,
     gas_metals,
     gas_mass,
 ):
@@ -127,8 +123,8 @@ t_d = 2.015  # GYR; THIS SHOULD BE PUT AS A CHOICE FOR DELAYED/INSTANTANEOUS
 
 for i in np.arange(1):
     print(i)
-    delay_counter=0
-    
+    delay_counter = 0
+
     halo_mass, halo_mass_rate, redshift = read_trees()
 
     # TODO: Taking only the first Ntest values for testing
@@ -144,8 +140,8 @@ for i in np.arange(1):
     tsn = cosmic_time[0] + t_d  # Also a varying parameter
 
     gas_accretion_rate = baryon_accretion_rate(redshift, halo_mass, halo_mass_rate)
-    
-    #gas_mass = np.array((omega_b / omega_m) * halo_mass)
+
+    # gas_mass = np.array((omega_b / omega_m) * halo_mass)
     gas_mass = np.zeros(len(cosmic_time))
     gas_metals = np.zeros(len(cosmic_time))
 
@@ -153,9 +149,8 @@ for i in np.arange(1):
     stars_metals = np.zeros(len(cosmic_time))
     star_formation_rate_values = np.zeros(len(cosmic_time))
 
-    
     stellar_metallicity = np.zeros(len(cosmic_time))
-    
+
     dust_mass = np.zeros(len(cosmic_time))
 
     for j in range(1, len(cosmic_time)):
@@ -163,12 +158,11 @@ for i in np.arange(1):
         t_span = [cosmic_time[j - 1], cosmic_time[j]]
 
         if cosmic_time[j] <= tsn:
-            
             solution = solve_ivp(
                 evolve_gas,
                 t_span,
                 [gas_mass[j - 1]],
-                args=(                                                      
+                args=(
                     gas_accretion_rate[j - 1],
                     halo_mass[j - 1],
                     stellar_metallicity[j - 1],
@@ -176,7 +170,7 @@ for i in np.arange(1):
                     "no",
                 ),
             )
-            
+
             gas_mass[j] = solution.y[0, -1]
 
             solution = solve_ivp(
@@ -200,7 +194,6 @@ for i in np.arange(1):
                 ),
             )
             gas_metals[j] = solution.y[0, -1]
-            
 
             solution = solve_ivp(
                 lambda t, y: [
@@ -210,21 +203,20 @@ for i in np.arange(1):
                 [stars_metals[j - 1]],
             )
             stars_metals[j] = solution.y[0, -1]
-        
+
         elif cosmic_time[j] > tsn:
-            
             solution = solve_ivp(
                 evolve_gas,
                 t_span,
                 [gas_mass[j - 1]],
-                args=(                                                      
+                args=(
                     gas_accretion_rate[j - 1],
                     halo_mass[j - 1],
                     stellar_metallicity[j - 1],
                     0.0,
                 ),
             )
-            
+
             gas_mass[j] = solution.y[0, -1]
 
             solution = solve_ivp(
@@ -247,7 +239,7 @@ for i in np.arange(1):
                 ),
             )
             gas_metals[j] = solution.y[0, -1]
-            
+
             solution = solve_ivp(
                 lambda t, y: [
                     evolve_stars_metals(t, gas_metals[j - 1], gas_mass[j - 1])
@@ -256,16 +248,16 @@ for i in np.arange(1):
                 [stars_metals[j - 1]],
             )
             stars_metals[j] = solution.y[0, -1]
-            
+
             delay_counter += 1
-            
+
         star_formation_rate_values = star_formation_rate(cosmic_time[j], gas_mass[j])
         stellar_metallicity[j] = stars_metals[j] / stars_mass[j]
-        
-        
+
+
 # print(gas_mass, stars_mass, gas_metals, stars_metals)
 
-'''
+"""
 
 dir_out = "../data/outputs/"
 np.savez(
@@ -276,19 +268,18 @@ np.savez(
     stars_metals=stars_metals,
 )
 
-'''
+"""
 
 import matplotlib.pyplot as plt
 
-plt.semilogy(cosmic_time,gas_mass,label='Gas mass values')
-plt.semilogy(cosmic_time,stars_mass,label='Stellar mass values')
-plt.semilogy(cosmic_time,gas_metals,label='Gas metallicity values')
-plt.semilogy(cosmic_time,stars_metals,label='Stellar metallicity (SF capture)')
+plt.semilogy(cosmic_time, gas_mass, label="Gas mass values")
+plt.semilogy(cosmic_time, stars_mass, label="Stellar mass values")
+plt.semilogy(cosmic_time, gas_metals, label="Gas metallicity values")
+plt.semilogy(cosmic_time, stars_metals, label="Stellar metallicity (SF capture)")
 
-#plt.semilogy(cosmic_time,dust_mass,label='Dust mass')
+# plt.semilogy(cosmic_time,dust_mass,label='Dust mass')
 
-plt.ylim(10**-3,10**10)
-plt.legend() 
-            
+plt.ylim(10**-3, 10**10)
+plt.legend()
+
 plt.show()
-
