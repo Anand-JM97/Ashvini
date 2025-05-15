@@ -208,6 +208,8 @@ for i in np.arange(1):
             )
             stars_metals[j] = solution.y[0, -1]
 
+            delay_counter = j  # catch the last value of j before switching on SNe
+
         elif cosmic_time[j] > tsn:
             solution = solve_ivp(
                 evolve_gas,
@@ -218,7 +220,7 @@ for i in np.arange(1):
                     gas_accretion_rate[j - 1],
                     halo_mass[j - 1],
                     stellar_metallicity[j - 1],
-                    past_sfr=0.0,
+                    sfr[j - delay_counter - 1],
                 ),
             )
 
@@ -242,7 +244,7 @@ for i in np.arange(1):
                     gas_accretion_rate[j - 1],
                     halo_mass[j - 1],
                     stellar_metallicity[j - 1],
-                    past_sfr=0.0,
+                    sfr[j - 1 - delay_counter],
                 ),
             )
             gas_metals[j] = solution.y[0, -1]
@@ -260,8 +262,6 @@ for i in np.arange(1):
                 method="LSODA",
             )
             stars_metals[j] = solution.y[0, -1]
-
-            delay_counter += 1
 
         sfr[j] = star_formation_rate(cosmic_time[j], gas_mass[j])
 
