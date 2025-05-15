@@ -42,6 +42,7 @@ def z_at_time(time):
     Returns:
         Float: The redshift value.
     """
+
     return z_at_value(cosmo.age, time * u.Gyr).value
 
 
