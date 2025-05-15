@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from scipy.integrate import solve_ivp
+
 from utils import read_trees
 from utils import omega_m, omega_b
 from metallicity import (
@@ -13,7 +14,6 @@ import reionization as reion
 import supernovae_feedback as sn
 
 from star_formation import star_formation_rate
-from supernovae_feedback import wind_mass_evolution_rate
 
 
 def baryon_accretion_rate(redshift, halo_mass, halo_mass_dot, uv_suppression=True):
@@ -118,8 +118,9 @@ def evolve_stars_metals(
 
 # uv_choice = input("Do you want to include background UV suppression or not?")
 
-t_d = 2.015  # GYR; THIS SHOULD BE PUT AS A CHOICE FOR DELAYED/INSTANTANEOUS
+t_d = 0.015  # GYR; THIS SHOULD BE PUT AS A CHOICE FOR DELAYED/INSTANTANEOUS
 
+tiny = 1e-12  # small number for numerical gymnastics...
 
 for i in np.arange(1):
     print(i)
@@ -141,8 +142,8 @@ for i in np.arange(1):
 
     gas_accretion_rate = baryon_accretion_rate(redshift, halo_mass, halo_mass_rate)
 
-    # gas_mass = np.array((omega_b / omega_m) * halo_mass)
-    gas_mass = np.zeros(len(cosmic_time))
+    gas_mass = tiny * np.ones(len(cosmic_time))
+
     gas_metals = np.zeros(len(cosmic_time))
 
     stars_mass = np.zeros(len(cosmic_time))
@@ -162,6 +163,7 @@ for i in np.arange(1):
                 evolve_gas,
                 t_span,
                 [gas_mass[j - 1]],
+                method="LSODA",
                 args=(
                     gas_accretion_rate[j - 1],
                     halo_mass[j - 1],
@@ -177,6 +179,7 @@ for i in np.arange(1):
                 lambda t, y: [star_formation_rate(t, gas_mass[j - 1])],
                 t_span,
                 [stars_mass[j - 1]],
+                method="LSODA",
             )
             stars_mass[j] = solution.y[0, -1]
 
@@ -184,6 +187,7 @@ for i in np.arange(1):
                 evolve_gas_metals,
                 t_span,
                 [gas_metals[j - 1]],
+                method="LSODA",
                 args=(
                     gas_mass[j - 1],
                     gas_accretion_rate[j - 1],
@@ -201,6 +205,7 @@ for i in np.arange(1):
                 ],
                 t_span,
                 [stars_metals[j - 1]],
+                method="LSODA",
             )
             stars_metals[j] = solution.y[0, -1]
 
@@ -209,6 +214,7 @@ for i in np.arange(1):
                 evolve_gas,
                 t_span,
                 [gas_mass[j - 1]],
+                method="LSODA",
                 args=(
                     gas_accretion_rate[j - 1],
                     halo_mass[j - 1],
@@ -223,6 +229,7 @@ for i in np.arange(1):
                 lambda t, y: [star_formation_rate(t, gas_mass[j - 1])],
                 t_span,
                 [stars_mass[j - 1]],
+                method="LSODA",
             )
             stars_mass[j] = solution.y[0, -1]
 
@@ -230,6 +237,7 @@ for i in np.arange(1):
                 evolve_gas_metals,
                 t_span,
                 [gas_metals[j - 1]],
+                method="LSODA",
                 args=(
                     gas_mass[j - 1],
                     gas_accretion_rate[j - 1],
@@ -242,10 +250,15 @@ for i in np.arange(1):
 
             solution = solve_ivp(
                 lambda t, y: [
-                    evolve_stars_metals(t, gas_metals[j - 1], gas_mass[j - 1])
+                    evolve_stars_metals(
+                        t,
+                        gas_metals[j - 1],
+                        gas_mass[j - 1],
+                    )
                 ],
                 t_span,
                 [stars_metals[j - 1]],
+                method="LSODA",
             )
             stars_metals[j] = solution.y[0, -1]
 
@@ -257,12 +270,7 @@ for i in np.arange(1):
             stellar_metallicity[j] = stars_metals[j] / stars_mass[j]
         else:
             stellar_metallicity[j] = 0
-        # stellar_metallicity[j] = stars_metals[j] / stars_mass[j]
 
-
-# print(gas_mass, stars_mass, gas_metals, stars_metals)
-
-"""
 
 dir_out = "../data/outputs/"
 np.savez(
@@ -272,19 +280,3 @@ np.savez(
     gas_metals=gas_metals,
     stars_metals=stars_metals,
 )
-
-"""
-
-import matplotlib.pyplot as plt
-
-plt.semilogy(cosmic_time, gas_mass, label="Gas mass values")
-plt.semilogy(cosmic_time, stars_mass, label="Stellar mass values")
-plt.semilogy(cosmic_time, gas_metals, label="Gas metallicity values")
-plt.semilogy(cosmic_time, stars_metals, label="Stellar metallicity (SF capture)")
-
-# plt.semilogy(cosmic_time,dust_mass,label='Dust mass')
-
-plt.ylim(10**-3, 10**10)
-plt.legend()
-
-plt.show()
