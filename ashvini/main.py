@@ -139,7 +139,6 @@ for i in np.arange(1):
     cosmic_time = utils.time_at_z(redshift)  # Gyr
 
     tsn = cosmic_time[0] + t_d  # Also a varying parameter
-
     gas_accretion_rate = baryon_accretion_rate(redshift, halo_mass, halo_mass_rate)
 
     gas_mass = tiny * np.ones(len(cosmic_time))
@@ -148,7 +147,7 @@ for i in np.arange(1):
 
     stars_mass = np.zeros(len(cosmic_time))
     stars_metals = np.zeros(len(cosmic_time))
-    star_formation_rate_values = np.zeros(len(cosmic_time))
+    sfr = np.zeros(len(cosmic_time))
 
     stellar_metallicity = np.zeros(len(cosmic_time))
 
@@ -219,7 +218,7 @@ for i in np.arange(1):
                     gas_accretion_rate[j - 1],
                     halo_mass[j - 1],
                     stellar_metallicity[j - 1],
-                    0.0,
+                    past_sfr=0.0,
                 ),
             )
 
@@ -243,7 +242,7 @@ for i in np.arange(1):
                     gas_accretion_rate[j - 1],
                     halo_mass[j - 1],
                     stellar_metallicity[j - 1],
-                    0.0,
+                    past_sfr=0.0,
                 ),
             )
             gas_metals[j] = solution.y[0, -1]
@@ -264,7 +263,7 @@ for i in np.arange(1):
 
             delay_counter += 1
 
-        star_formation_rate_values = star_formation_rate(cosmic_time[j], gas_mass[j])
+        sfr[j] = star_formation_rate(cosmic_time[j], gas_mass[j])
 
         if stars_mass[j] > 0:
             stellar_metallicity[j] = stars_metals[j] / stars_mass[j]
