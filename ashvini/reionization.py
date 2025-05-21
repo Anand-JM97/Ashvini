@@ -68,23 +68,51 @@ def epsilon(z):
     return epsilon
 
 
+#
+# def uv_suppression(z_val, m_halo, mdot_halo):
+#     values = []
+#     for i in range(0, len(z_val)):
+#         if z_val[i] > 10:
+#             test_value = 1
+#         else:
+#             test_value = s(mu_c(z_val[i], m_halo[i]), omega) * (
+#                 (1 + X(z_val[i], m_halo[i]))
+#                 - 2
+#                 * epsilon(z_val[i])
+#                 * m_halo[i]
+#                 * X(z_val[i], m_halo[i])
+#                 * (1 + z_val[i])
+#                 * cosmo.H(z_val[i]).value
+#                 / mdot_halo[i]
+#             )
+#         if test_value < 0:
+#             test_value = 0.0
+#         values = np.append(values, [test_value])
+#     return values
+#
 def uv_suppression(z_val, m_halo, mdot_halo):
-    values = []
-    for i in range(0, len(z_val)):
-        if z_val[i] > 10:
-            test_value = 1
-        else:
-            test_value = s(mu_c(z_val[i], m_halo[i]), omega) * (
-                (1 + X(z_val[i], m_halo[i]))
-                - 2
-                * epsilon(z_val[i])
-                * m_halo[i]
-                * X(z_val[i], m_halo[i])
-                * (1 + z_val[i])
-                * cosmo.H(z_val[i]).value
-                / mdot_halo[i]
-            )
-        if test_value < 0:
-            test_value = 0.0
-        values = np.append(values, [test_value])
-    return values
+    z_val = np.asarray(z_val)
+    m_halo = np.asarray(m_halo)
+    mdot_halo = np.asarray(mdot_halo)
+
+    suppression = np.ones_like(z_val)
+
+    mask = z_val <= 10
+
+    z_masked = z_val[mask]
+    mh_masked = m_halo[mask]
+    mdot_masked = mdot_halo[mask]
+
+    mu_vals = mu_c(z_masked, mh_masked)
+    x_vals = X(z_masked, mh_masked)
+    eps_vals = epsilon(z_masked)
+    H_vals = cosmo.H(z_masked).value
+
+    suppressed = s(mu_vals, omega) * (
+        (1 + x_vals)
+        - 2 * eps_vals * mh_masked * x_vals * (1 + z_masked) * H_vals / mdot_masked
+    )
+
+    suppression[mask] = np.maximum(suppressed, 0.0)
+
+    return suppression

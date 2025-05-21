@@ -3,6 +3,9 @@ from astropy.cosmology import Planck18 as cosmo
 from astropy.cosmology import z_at_value
 import astropy.units as u
 
+# from functools import lru_cache
+from scipy.interpolate import interp1d
+
 H_0 = cosmo.H0  # in km / (Mpc s)
 H_0 = H_0.to(u.Gyr ** (-1))  # in 1/Gyr
 
@@ -33,17 +36,29 @@ def time_at_z(z):
     return cosmo.age(z).value
 
 
-def z_at_time(time):
-    """
-    Function to convert cosmic time to redshift.
-    Args:
-        t (float): Parameter representing cosmic time.
+# def z_at_time(time):
+#     """
+#     Function to convert cosmic time to redshift.
+#     Args:
+#         t (float): Parameter representing cosmic time.
+#
+#     Returns:
+#         Float: The redshift value.
+#     """
+#
+#     return z_at_value(cosmo.age, time * u.Gyr).value
 
-    Returns:
-        Float: The redshift value.
-    """
+# @lru_cache(maxsize=None)
+# def z_at_time(time):
+#     return z_at_value(cosmo.age, time * u.Gyr).value
 
-    return z_at_value(cosmo.age, time * u.Gyr).value
+z_vals = np.linspace(4, 35, 6000)
+t_vals = cosmo.age(z_vals).value  # Gyr
+z_interp = interp1d(t_vals[::-1], z_vals[::-1], kind="cubic", fill_value="extrapolate")
+
+
+def z_at_time(t):  # t in Gyr
+    return float(z_interp(t))
 
 
 def Hubble_time(z):

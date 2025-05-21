@@ -122,14 +122,15 @@ t_d = 0.015  # GYR; THIS SHOULD BE PUT AS A CHOICE FOR DELAYED/INSTANTANEOUS
 
 tiny = 1e-12  # small number for numerical gymnastics...
 
+method = "LSODA"
 for i in np.arange(1):
-    print(i)
-    delay_counter = 0
+    # print(i)
 
     halo_mass, halo_mass_rate, redshift = read_trees()
 
     # TODO: Taking only the first Ntest values for testing
     Ntest = 20000
+    Ntest = len(redshift)  # For testing purposes
     halo_mass, halo_mass_rate, redshift = (
         halo_mass[:Ntest],
         halo_mass_rate[:Ntest],
@@ -154,7 +155,7 @@ for i in np.arange(1):
     dust_mass = np.zeros(len(cosmic_time))
 
     for j in range(1, len(cosmic_time)):
-        print(j)
+        # print(j)
         t_span = [cosmic_time[j - 1], cosmic_time[j]]
 
         if cosmic_time[j] <= tsn:
@@ -162,7 +163,7 @@ for i in np.arange(1):
                 evolve_gas,
                 t_span,
                 [gas_mass[j - 1]],
-                method="LSODA",
+                method=method,
                 args=(
                     gas_accretion_rate[j - 1],
                     halo_mass[j - 1],
@@ -178,7 +179,7 @@ for i in np.arange(1):
                 lambda t, y: [star_formation_rate(t, gas_mass[j - 1])],
                 t_span,
                 [stars_mass[j - 1]],
-                method="LSODA",
+                method=method,
             )
             stars_mass[j] = solution.y[0, -1]
 
@@ -186,7 +187,7 @@ for i in np.arange(1):
                 evolve_gas_metals,
                 t_span,
                 [gas_metals[j - 1]],
-                method="LSODA",
+                method=method,
                 args=(
                     gas_mass[j - 1],
                     gas_accretion_rate[j - 1],
@@ -204,7 +205,7 @@ for i in np.arange(1):
                 ],
                 t_span,
                 [stars_metals[j - 1]],
-                method="LSODA",
+                method=method,
             )
             stars_metals[j] = solution.y[0, -1]
 
@@ -215,7 +216,7 @@ for i in np.arange(1):
                 evolve_gas,
                 t_span,
                 [gas_mass[j - 1]],
-                method="LSODA",
+                method=method,
                 args=(
                     gas_accretion_rate[j - 1],
                     halo_mass[j - 1],
@@ -230,7 +231,7 @@ for i in np.arange(1):
                 lambda t, y: [star_formation_rate(t, gas_mass[j - 1])],
                 t_span,
                 [stars_mass[j - 1]],
-                method="LSODA",
+                method=method,
             )
             stars_mass[j] = solution.y[0, -1]
 
@@ -238,7 +239,7 @@ for i in np.arange(1):
                 evolve_gas_metals,
                 t_span,
                 [gas_metals[j - 1]],
-                method="LSODA",
+                method=method,
                 args=(
                     gas_mass[j - 1],
                     gas_accretion_rate[j - 1],
@@ -259,7 +260,7 @@ for i in np.arange(1):
                 ],
                 t_span,
                 [stars_metals[j - 1]],
-                method="LSODA",
+                method=method,
             )
             stars_metals[j] = solution.y[0, -1]
 
