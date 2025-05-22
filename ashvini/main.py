@@ -265,7 +265,21 @@ for i in np.arange(1):
             stars_metals[j] = solution.y[0, -1]
 
         sfr[j] = star_formation_rate(cosmic_time[j], gas_mass[j])
-
+        
+        if gas_mass[j] < 0.0:
+            gas_mass[j] = 0.0
+            gas_metals[j] = 0.0
+        
+        if stars_mass[j] < 0.0:
+            stars_mass[j] = 0.0
+            stars_metals[j] = 0.0
+            
+        if gas_metals[j] < 0.0:
+            gas_metals[j] = 0.0
+            
+        if stars_metals[j] < 0.0:
+            stars_metals[j] = 0.0
+        
         if stars_mass[j] > 0:
             stellar_metallicity[j] = stars_metals[j] / stars_mass[j]
         else:
