@@ -3,7 +3,6 @@ from astropy.cosmology import Planck18 as cosmo
 from astropy.cosmology import z_at_value
 import astropy.units as u
 
-# from functools import lru_cache
 from scipy.interpolate import interp1d
 
 H_0 = cosmo.H0  # in km / (Mpc s)
@@ -17,8 +16,8 @@ omega_L = cosmo.Ode0
 def read_trees():
     dir_name = "../data/inputs/"
 
-    m_halo = np.loadtxt(dir_name + "halo_mass_0.txt", usecols=(0,))
-    halo_accretion_rate = np.loadtxt(dir_name + "halo_mass_rate_0.txt", usecols=(0,))
+    m_halo = np.loadtxt(dir_name + "halo_mass_1.txt", usecols=(0,))
+    halo_accretion_rate = np.loadtxt(dir_name + "halo_mass_rate_1.txt", usecols=(0,))
     redshift = np.loadtxt(dir_name + "redshifts.txt", usecols=(0,))
 
     return np.asarray(m_halo), np.asarray(halo_accretion_rate), np.asarray(redshift)
@@ -35,22 +34,6 @@ def time_at_z(z):
     """
     return cosmo.age(z).value
 
-
-# def z_at_time(time):
-#     """
-#     Function to convert cosmic time to redshift.
-#     Args:
-#         t (float): Parameter representing cosmic time.
-#
-#     Returns:
-#         Float: The redshift value.
-#     """
-#
-#     return z_at_value(cosmo.age, time * u.Gyr).value
-
-# @lru_cache(maxsize=None)
-# def z_at_time(time):
-#     return z_at_value(cosmo.age, time * u.Gyr).value
 
 z_vals = np.linspace(4, 35, 6000)
 t_vals = cosmo.age(z_vals).value  # Gyr

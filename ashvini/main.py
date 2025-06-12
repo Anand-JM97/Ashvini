@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from astropy import cosmology
 import numpy as np
 from scipy.integrate import solve_ivp
 
@@ -61,8 +62,7 @@ def evolve_gas(
     gas_mass_evolution_rate = (
         gas_accretion_rate
         - present_sfr
-        - sn.mass_loading_factor(redshift, halo_mass, stellar_metallicity)
-        * wind_sfr  # - wind_mass_evolution_rate(redshift, gas_mass, halo_mass, wind_sfr, stellar_metallicity)
+        - sn.mass_loading_factor(redshift, halo_mass, stellar_metallicity) * wind_sfr
     )
     return np.asarray(gas_mass_evolution_rate)
 
@@ -85,12 +85,12 @@ def evolve_gas_metals(
         wind_sfr = 0.0
     if kind == "instantaneous":
         wind_sfr = present_sfr
-    
+
     if gas_mass == 0.0:
         gas_metals_rate = (
             (IGM_metallicity * gas_accretion_rate)  # Enriched gas accreting from IGM
             + (metallicity_yield * wind_sfr)  # Delayed enrichment of ISM by dying stars
-            )
+        )
     else:
         gas_metals_rate = (
             (IGM_metallicity * gas_accretion_rate)  # Enriched gas accreting from IGM
@@ -114,7 +114,7 @@ def evolve_stars_metals(
     gas_mass,
 ):
     # TODO: We can simply call starformation_rate here- Should SFR use gas_metals as argument instead of gas_mass?
-    if (gas_mass == 0.0):
+    if gas_mass == 0.0:
         stars_metals_rate = 0
     else:
         stars_metals_rate = (
@@ -125,21 +125,20 @@ def evolve_stars_metals(
     return stars_metals_rate
 
 
-# uv_choice = input("Do you want to include background UV suppression or not?")
-
 t_d = 0.015  # GYR; THIS SHOULD BE PUT AS A CHOICE FOR DELAYED/INSTANTANEOUS
 
 tiny = 1e-12  # small number for numerical gymnastics...
 
 method = "RK45"
+method = "LSODA"
 for i in np.arange(1):
     # print(i)
 
     halo_mass, halo_mass_rate, redshift = read_trees()
 
     # TODO: Taking only the first Ntest values for testing
-    Ntest = 20000
-    #Ntest = len(redshift)  # For testing purposes
+    Ntest = 10000
+    Ntest = len(redshift)
     halo_mass, halo_mass_rate, redshift = (
         halo_mass[:Ntest],
         halo_mass_rate[:Ntest],
@@ -147,11 +146,12 @@ for i in np.arange(1):
     )
 
     cosmic_time = utils.time_at_z(redshift)  # Gyr
-    
+
     tsn = cosmic_time[0] + t_d  # Also a varying parameter
     gas_accretion_rate = baryon_accretion_rate(redshift, halo_mass, halo_mass_rate)
 
     gas_mass = tiny * np.ones(len(cosmic_time))
+    gas_mass = np.zeros(len(cosmic_time))
 
     gas_metals = np.zeros(len(cosmic_time))
 
@@ -202,7 +202,7 @@ for i in np.arange(1):
                     gas_accretion_rate[j - 1],
                     halo_mass[j - 1],
                     stellar_metallicity[j - 1],
-                    0.0,
+                    sfr[j - 1],
                     "no",
                 ),
             )
@@ -231,6 +231,7 @@ for i in np.arange(1):
                     halo_mass[j - 1],
                     stellar_metallicity[j - 1],
                     sfr[j - delay_counter - 1],
+                    "instantaneous",
                 ),
             )
 
@@ -255,11 +256,12 @@ for i in np.arange(1):
                     halo_mass[j - 1],
                     stellar_metallicity[j - 1],
                     sfr[j - 1 - delay_counter],
+                    "instantaneous",
                 ),
             )
-            
+
             gas_metals[j] = solution.y[0, -1]
-            
+
             solution = solve_ivp(
                 lambda t, y: [
                     evolve_stars_metals(
@@ -275,30 +277,26 @@ for i in np.arange(1):
             stars_metals[j] = solution.y[0, -1]
 
         sfr[j] = star_formation_rate(cosmic_time[j], gas_mass[j])
-        
-        
+
         if gas_mass[j] < 0.0:
             gas_mass[j] = 0.0
             gas_metals[j] = 0.0
-        
+
         if stars_mass[j] < 0.0:
             stars_mass[j] = 0.0
             stars_metals[j] = 0.0
-            
+
         if gas_metals[j] < 0.0:
             gas_metals[j] = 0.0
-            
+
         if stars_metals[j] < 0.0:
             stars_metals[j] = 0.0
-        
+
         if stars_mass[j] > 0:
             stellar_metallicity[j] = stars_metals[j] / stars_mass[j]
         else:
             stellar_metallicity[j] = 0
-        
-        
-        
-    
+
 dir_out = "../data/outputs/"
 np.savez(
     dir_out + f"first_{Ntest}.npz",
@@ -308,4 +306,15 @@ np.savez(
     stars_metals=stars_metals,
 )
 
+import matplotlib.pyplot as plt
 
+plt.plot(cosmic_time, halo_mass, label="halo_mass")
+plt.plot(cosmic_time, halo_mass_rate, label="halo_mass_rate")
+plt.plot(cosmic_time, gas_mass, label="gas_mass")
+plt.plot(cosmic_time, stars_mass, label="stars_mass")
+plt.plot(cosmic_time, sfr, label="sfr")
+plt.plot(cosmic_time, gas_metals, label="gas_metals")
+plt.plot(cosmic_time, stars_metals, label="stars_metals")
+plt.yscale("log")
+plt.legend()
+plt.show()
