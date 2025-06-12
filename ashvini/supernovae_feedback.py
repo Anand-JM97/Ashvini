@@ -25,7 +25,7 @@ def mass_loading_factor(redshift, halo_mass, stellar_metallicity):
     mass_loading_factor = (
         epsilon_p
         * pi_fid
-        * ((10**11.5) / halo_mass ** (1 / 3))
+        * ((10**11.5 / halo_mass) ** (1 / 3))
         * ((9 / (1 + redshift)) ** (1 / 2))
         * metallicity_function(stellar_metallicity)
     )
