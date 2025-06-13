@@ -1,17 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-Code for supernova feedback
-
-@author: Anand Menon
-"""
-
-import numpy as np
-
-import utils as utils
-import star_formation as sf
-
 epsilon_p = 5
 pi_fid = 1
+
+import numpy as np
+import utils as utils
 
 
 def metallicity_function(stellar_metallicity, m=0.1, s=0.01, a=1, b=0.25):

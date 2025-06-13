@@ -1,16 +1,12 @@
 import numpy as np
 from astropy.cosmology import Planck18 as cosmo
-from astropy.cosmology import z_at_value
 import astropy.units as u
 
 from scipy.interpolate import interp1d
 
-H_0 = cosmo.H0  # in km / (Mpc s)
-H_0 = H_0.to(u.Gyr ** (-1))  # in 1/Gyr
-
-omega_m = cosmo.Om0
-omega_b = cosmo.Ob0
-omega_L = cosmo.Ode0
+Omega_m = cosmo.Om0
+Omega_b = cosmo.Ob0
+Omega_L = cosmo.Ode0
 
 
 def read_trees():
@@ -35,7 +31,7 @@ def time_at_z(z):
     return cosmo.age(z).value
 
 
-z_vals = np.linspace(4, 35, 6000)
+z_vals = np.linspace(0, 50, 10000)
 t_vals = cosmo.age(z_vals).value  # Gyr
 z_interp = interp1d(t_vals[::-1], z_vals[::-1], kind="cubic", fill_value="extrapolate")
 
@@ -53,4 +49,4 @@ def Hubble_time(z):
     Returns:
         Float: The value of the Hubble constant for the redshift value entered as the argument.
     """
-    return (1 / cosmo.H(z)).value
+    return (1 / cosmo.H(z)).to(u.Gyr).value
