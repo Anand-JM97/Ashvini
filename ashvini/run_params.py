@@ -10,6 +10,7 @@ class StarFormationParams:
 
 @dataclass
 class SupernovaParams:
+    delay_time: float
     epsilon_p: float
     pi_fid: float
 

@@ -8,7 +8,7 @@ from utils import Omega_b, Omega_m
 from star_formation import star_formation_rate
 
 
-def gas_inflow_rate(redshift, halo_mass, halo_mass_dot, uv_suppression=True):
+def gas_inflow_rate(redshift, halo_mass, halo_mass_dot, UV_background=True):
     """
     Cosmological baryonic accretion rate, modulated by UV suppression.
 
@@ -22,7 +22,7 @@ def gas_inflow_rate(redshift, halo_mass, halo_mass_dot, uv_suppression=True):
         Float: The baryonic cosmological accretion rate.
     """
     gas_accretion_rate = (Omega_b / Omega_m) * halo_mass_dot
-    if uv_suppression:
+    if UV_background:
         gas_accretion_rate *= reion.uv_suppression(redshift, halo_mass, halo_mass_dot)
 
     return np.asarray(gas_accretion_rate)
