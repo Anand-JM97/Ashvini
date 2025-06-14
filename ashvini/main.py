@@ -11,12 +11,11 @@ sn_type = PARAMS.sn.type  # type of supernova feedback
 from utils import read_trees
 
 from star_formation import star_formation_rate
-from gas_evolve import gas_inflow_rate, update_gas_reservior
+from gas_evolve import gas_inflow_rate, update_gas_reservoir
 from metallicity import evolve_gas_metals, evolve_stars_metals
 
 
-tiny = 1e-12  # small number for numerical gymnastics...
-
+tiny = 1e-15  # small number for numerical gymnastics...
 
 method = "LSODA"
 
@@ -63,7 +62,7 @@ for i in np.arange(1):
 
         # Update gas mass
         sol = solve_ivp(
-            update_gas_reservior,
+            update_gas_reservoir,
             t_span,
             [gas_mass[j - 1]],
             method=method,

@@ -28,7 +28,7 @@ def gas_inflow_rate(redshift, halo_mass, halo_mass_dot, UV_background=True):
     return np.asarray(gas_accretion_rate)
 
 
-def update_gas_reservior(
+def update_gas_reservoir(
     t,
     gas_mass,
     gas_accretion_rate,
