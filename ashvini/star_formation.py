@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -*-
-
-e_ff = 0.015
-
 import numpy as np
 
 import utils as utils
 from utils import Hubble_time
+
+from run_params import PARAMS
+
+e_ff = PARAMS.sf.efficiency
 
 
 def time_freefall(redshift):

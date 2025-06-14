@@ -1,14 +1,11 @@
-# -*- coding: utf-8 -*-
-
-# Metallicity parameters
-
-IGM_metallicity = 1e-3  # Z_solar units
-metallicity_yield = 0.06
-wind_metallicity_enhancement_factor = 1
-
 import utils as utils
 import supernovae_feedback as sn
 from star_formation import star_formation_rate
+
+from run_params import PARAMS
+
+IGM_metallicity = PARAMS.metals.Z_IGM
+metallicity_yield = PARAMS.metals.Z_yield
 
 
 def evolve_gas_metals(

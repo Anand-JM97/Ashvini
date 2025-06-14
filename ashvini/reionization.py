@@ -1,12 +1,14 @@
-# -*- coding: utf-8 -*-
-# PARAMETERS FOR THE MODEL:
-z_rei = 7
-gamma = 15
-omega = 2
-
 import numpy as np
-from astropy.cosmology import Planck15 as cosmo
 import astropy.units as u
+
+from astropy.cosmology import Planck15 as cosmo
+
+from run_params import PARAMS
+
+z_rei = PARAMS.reion.z_reion
+gamma = PARAMS.reion.gamma
+omega = PARAMS.reion.omega
+
 
 H_0 = cosmo.H0  # in km / (Mpc s)
 H_0 = cosmo.H0.to(u.Gyr ** (-1))  # in 1/Gyr

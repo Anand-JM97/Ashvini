@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+from run_params import PARAMS
+
 import numpy as np
 from scipy.integrate import solve_ivp
 

@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
-epsilon_p = 5
-pi_fid = 1
 
 import numpy as np
 import utils as utils
+
+from run_params import PARAMS
+
+epsilon_p = PARAMS.sn.epsilon_p
+pi_fid = PARAMS.sn.pi_fid
 
 
 def metallicity_function(stellar_metallicity, m=0.1, s=0.01, a=1, b=0.25):
