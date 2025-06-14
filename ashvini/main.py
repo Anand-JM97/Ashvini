@@ -6,6 +6,7 @@ from run_params import PARAMS
 
 UV_background = PARAMS.reion.UVB_enabled
 t_d = PARAMS.sn.delay_time  # delay time for SNe feedback, in Gyr
+sn_type = PARAMS.sn.type  # type of supernova feedback
 
 from utils import read_trees
 
@@ -55,8 +56,7 @@ for i in np.arange(1):
             sfr_feedback = 0.0
             delay_counter = j
         else:
-            feedback_type = "instantaneous"
-            feedback_type = "delayed"
+            feedback_type = sn_type
             sfr_feedback = (
                 sfr[j - delay_counter - 1] if delay_counter is not None else 0.0
             )
