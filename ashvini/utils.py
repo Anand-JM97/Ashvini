@@ -19,34 +19,31 @@ def read_trees():
     return np.asarray(m_halo), np.asarray(halo_accretion_rate), np.asarray(redshift)
 
 
+# --- Precompute time and redshift interpolation ---
+_z_vals = np.linspace(0, 50, 10000)
+_t_vals = cosmo.age(_z_vals).value  # Gyr
+
+_z_interp = interp1d(
+    _t_vals[::-1], _z_vals[::-1], kind="cubic", fill_value="extrapolate"
+)
+_t_interp = interp1d(_z_vals, _t_vals, kind="cubic", fill_value="extrapolate")
+
+_Hubble_time_vals = (1 / cosmo.H(_z_vals)).to(u.Gyr).value
+_Hubble_interp = interp1d(
+    _z_vals, _Hubble_time_vals, kind="cubic", fill_value="extrapolate"
+)
+
+
 def time_at_z(z):
-    """
-    Function to convert redshift to cosmic time.
-    Args:
-        z (float): Parameter representing redshift.
-
-    Returns:
-        Float: The comsic time value.
-    """
-    return cosmo.age(z).value
+    """Convert redshift to cosmic time (Gyr)."""
+    return np.asarray(_t_interp(z))
 
 
-z_vals = np.linspace(0, 50, 10000)
-t_vals = cosmo.age(z_vals).value  # Gyr
-z_interp = interp1d(t_vals[::-1], z_vals[::-1], kind="cubic", fill_value="extrapolate")
-
-
-def z_at_time(t):  # t in Gyr
-    return float(z_interp(t))
+def z_at_time(t):
+    """Convert cosmic time (Gyr) to redshift."""
+    return np.asarray(_z_interp(t))
 
 
 def Hubble_time(z):
-    """
-    Hubble time is the inverse of the Hubble constant.
-    Args:
-        z (float): Parameter for redshift.
-
-    Returns:
-        Float: The value of the Hubble constant for the redshift value entered as the argument.
-    """
-    return (1 / cosmo.H(z)).to(u.Gyr).value
+    """Return Hubble time (Gyr) at redshift z."""
+    return np.asarray(_Hubble_interp(z))
