@@ -1,0 +1,18 @@
+star_formation:
+  efficiency: 0.015
+
+supernova:
+  type: "delayed" # or instantaneous or no
+  delay_time: 0.015 #Gyr
+  epsilon_p: 5
+  pi_fid: 1
+
+reionization:
+  UVB_enabled: True
+  z_reion: 7
+  gamma: 15
+  omega: 2
+
+metallicity:
+  Z_IGM: 1.0e-3 #Z_solar units
+  Z_yield: 0.06
