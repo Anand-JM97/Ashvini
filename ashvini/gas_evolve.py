@@ -1,11 +1,11 @@
 import numpy as np
 
-import reionization as reion
-import supernovae_feedback as sn
-import utils as utils
+from . import reionization as reion
+from . import supernovae_feedback as sn
+from . import utils as utils
 
-from utils import Omega_b, Omega_m
-from star_formation import star_formation_rate
+from .utils import Omega_b, Omega_m
+from .star_formation import star_formation_rate
 
 
 def gas_inflow_rate(redshift, halo_mass, halo_mass_dot, UV_background=True):

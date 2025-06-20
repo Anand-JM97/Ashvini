@@ -1,25 +1,26 @@
 import numpy as np
-import utils as utils
+from . import utils as utils
 from scipy.integrate import solve_ivp
 
-from run_params import PARAMS
+from .run_params import PARAMS
 
 UV_background = PARAMS.reion.UVB_enabled
 t_d = PARAMS.sn.delay_time  # delay time for SNe feedback, in Gyr
 sn_type = PARAMS.sn.type  # type of supernova feedback
 
-from utils import read_trees
+from .utils import read_trees
 
-from star_formation import star_formation_rate
-from gas_evolve import gas_inflow_rate, update_gas_reservoir
-from metallicity import evolve_gas_metals, evolve_stars_metals
+from .star_formation import star_formation_rate
+from .gas_evolve import gas_inflow_rate, update_gas_reservoir
+from .metallicity import evolve_gas_metals, evolve_stars_metals
 
 
 tiny = 1e-15  # small number for numerical gymnastics...
 
 method = "LSODA"
 
-for i in np.arange(1):
+
+def run():
     halo_mass, halo_mass_rate, redshift = read_trees()
 
     # TODO: Taking only the first Ntest values for testing
@@ -127,24 +128,24 @@ for i in np.arange(1):
         else:
             stellar_metallicity[j] = 0.0
 
-dir_out = "../data/outputs/"
-np.savez(
-    dir_out + f"first_{Ntest}.npz",
-    gas_mass=gas_mass,
-    stars_mass=stars_mass,
-    gas_metals=gas_metals,
-    stars_metals=stars_metals,
-)
+    dir_out = "./data/outputs/"
+    np.savez(
+        dir_out + f"first_{Ntest}.npz",
+        gas_mass=gas_mass,
+        stars_mass=stars_mass,
+        gas_metals=gas_metals,
+        stars_metals=stars_metals,
+    )
 
-import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt
 
-plt.plot(cosmic_time, halo_mass, label="halo_mass")
-plt.plot(cosmic_time, halo_mass_rate, label="halo_mass_rate")
-plt.plot(cosmic_time, gas_mass, label="gas_mass")
-plt.plot(cosmic_time, stars_mass, label="stars_mass")
-plt.plot(cosmic_time, sfr, label="sfr")
-plt.plot(cosmic_time, gas_metals, label="gas_metals")
-plt.plot(cosmic_time, stars_metals, label="stars_metals")
-plt.yscale("log")
-plt.legend()
-plt.show()
+    plt.plot(cosmic_time, halo_mass, label="halo_mass")
+    plt.plot(cosmic_time, halo_mass_rate, label="halo_mass_rate")
+    plt.plot(cosmic_time, gas_mass, label="gas_mass")
+    plt.plot(cosmic_time, stars_mass, label="stars_mass")
+    plt.plot(cosmic_time, sfr, label="sfr")
+    plt.plot(cosmic_time, gas_metals, label="gas_metals")
+    plt.plot(cosmic_time, stars_metals, label="stars_metals")
+    plt.yscale("log")
+    plt.legend()
+    plt.show()

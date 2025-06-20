@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import utils as utils
+from . import utils as utils
 
-from run_params import PARAMS
+from .run_params import PARAMS
 
 epsilon_p = PARAMS.sn.epsilon_p
 pi_fid = PARAMS.sn.pi_fid

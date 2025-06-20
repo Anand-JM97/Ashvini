@@ -1,8 +1,8 @@
-import utils as utils
-import supernovae_feedback as sn
-from star_formation import star_formation_rate
+from . import utils as utils
+from . import supernovae_feedback as sn
+from .star_formation import star_formation_rate
 
-from run_params import PARAMS
+from .run_params import PARAMS
 
 IGM_metallicity = PARAMS.metals.Z_IGM
 metallicity_yield = PARAMS.metals.Z_yield

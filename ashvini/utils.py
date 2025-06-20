@@ -10,7 +10,7 @@ Omega_L = cosmo.Ode0
 
 
 def read_trees():
-    dir_name = "../data/inputs/"
+    dir_name = "./data/inputs/"
 
     m_halo = np.loadtxt(dir_name + "halo_mass_0.txt", usecols=(0,))
     halo_accretion_rate = np.loadtxt(dir_name + "halo_mass_rate_0.txt", usecols=(0,))

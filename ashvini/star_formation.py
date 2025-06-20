@@ -1,9 +1,8 @@
 import numpy as np
 
-import utils as utils
-from utils import Hubble_time
+from .utils import Hubble_time, z_at_time
 
-from run_params import PARAMS
+from .run_params import PARAMS
 
 e_ff = PARAMS.sf.efficiency
 
@@ -20,7 +19,7 @@ def star_formation_rate(
     Equation 2 in Menon et al 2024
     """
 
-    redshift = utils.z_at_time(t)
+    redshift = z_at_time(t)
 
     star_formation_rate = (e_ff / time_freefall(redshift)) * gas_mass
     return np.asarray(star_formation_rate)

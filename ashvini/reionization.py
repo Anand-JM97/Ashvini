@@ -3,7 +3,7 @@ import astropy.units as u
 
 from astropy.cosmology import Planck15 as cosmo
 
-from run_params import PARAMS
+from .run_params import PARAMS
 
 z_rei = PARAMS.reion.z_reion
 gamma = PARAMS.reion.gamma
