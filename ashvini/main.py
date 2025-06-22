@@ -1,6 +1,11 @@
 import numpy as np
 from . import utils as utils
 from scipy.integrate import solve_ivp
+from .utils import read_trees
+
+from .star_formation import star_formation_rate
+from .gas_evolve import gas_inflow_rate, update_gas_reservoir
+from .metallicity import evolve_gas_metals, evolve_stars_metals
 
 from .run_params import PARAMS
 
@@ -8,19 +13,13 @@ UV_background = PARAMS.reion.UVB_enabled
 t_d = PARAMS.sn.delay_time  # delay time for SNe feedback, in Gyr
 sn_type = PARAMS.sn.type  # type of supernova feedback
 
-from .utils import read_trees
-
-from .star_formation import star_formation_rate
-from .gas_evolve import gas_inflow_rate, update_gas_reservoir
-from .metallicity import evolve_gas_metals, evolve_stars_metals
-
 
 tiny = 1e-15  # small number for numerical gymnastics...
 
 method = "LSODA"
 
 
-def run():
+def run1():
     halo_mass, halo_mass_rate, redshift = read_trees()
 
     # TODO: Taking only the first Ntest values for testing
@@ -87,7 +86,10 @@ def run():
         stars_mass[j] = sol.y[0, -1]
 
         # Update gas metals
-        sfr_input = sfr[j - 1] if cosmic_time[j] <= tsn else sfr[j - 1 - delay_counter]
+        if cosmic_time[j] <= tsn:
+            sfr_input = sfr[j - 1]
+        else:
+            sfr_input = sfr[j - 1 - delay_counter]
         sol = solve_ivp(
             evolve_gas_metals,
             t_span,
@@ -127,6 +129,12 @@ def run():
             stellar_metallicity[j] = stars_metals[j] / stars_mass[j]
         else:
             stellar_metallicity[j] = 0.0
+
+
+def run():
+    for i in np.arange(10):
+        run1()
+        print(f"Run {i + 1} completed.")
 
     dir_out = "./data/outputs/"
     np.savez(
