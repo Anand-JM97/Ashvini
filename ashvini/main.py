@@ -1,7 +1,12 @@
 import numpy as np
-from . import utils as utils
 from scipy.integrate import solve_ivp
-from .utils import read_trees
+
+import h5py
+from tqdm import tqdm
+from joblib import Parallel, delayed
+from tqdm_joblib import tqdm_joblib
+
+from . import utils as utils
 
 from .star_formation import star_formation_rate
 from .gas_evolve import gas_inflow_rate, update_gas_reservoir
@@ -19,9 +24,10 @@ tiny = 1e-15  # small number for numerical gymnastics...
 method = "LSODA"
 
 
-def run1():
-    halo_mass, halo_mass_rate, redshift = read_trees()
+halo_mass, halo_mass_rate, redshift = utils.read_trees()
 
+
+def run1(halo_mass=halo_mass, halo_mass_rate=halo_mass_rate, redshift=redshift):
     # TODO: Taking only the first Ntest values for testing
     Ntest = len(redshift)
     halo_mass = halo_mass[:Ntest]
@@ -47,7 +53,6 @@ def run1():
     delay_counter = None
 
     for j in range(1, n):
-        print(j)
         t_span = [cosmic_time[j - 1], cosmic_time[j]]
 
         if cosmic_time[j] <= tsn:
@@ -130,30 +135,86 @@ def run1():
         else:
             stellar_metallicity[j] = 0.0
 
+    return {
+        "gas_mass": gas_mass,
+        "stars_mass": stars_mass,
+        "gas_metals": gas_metals,
+        "stars_metals": stars_metals,
+        "sfr": sfr,
+        "cosmic_time": cosmic_time,
+        "halo_mass": halo_mass,
+        "halo_mass_rate": halo_mass_rate,
+        "redshift": redshift,
+    }
+
+
+# def run():
+#     for i in np.arange(10):
+#         run1()
+#         print(f"Run {i + 1} completed.")
+#
+#     dir_out = "./data/outputs/"
+#     np.savez(
+#         dir_out + f"first_{Ntest}.npz",
+#         gas_mass=gas_mass,
+#         stars_mass=stars_mass,
+#         gas_metals=gas_metals,
+#         stars_metals=stars_metals,
+#     )
+#
+#     import matplotlib.pyplot as plt
+#
+#     plt.plot(cosmic_time, halo_mass, label="halo_mass")
+#     plt.plot(cosmic_time, halo_mass_rate, label="halo_mass_rate")
+#     plt.plot(cosmic_time, gas_mass, label="gas_mass")
+#     plt.plot(cosmic_time, stars_mass, label="stars_mass")
+#     plt.plot(cosmic_time, sfr, label="sfr")
+#     plt.plot(cosmic_time, gas_metals, label="gas_metals")
+#     plt.plot(cosmic_time, stars_metals, label="stars_metals")
+#     plt.yscale("log")
+#     plt.legend()
+#     plt.show()
+
+from joblib import Parallel, delayed
+import os
+
+import os
+import numpy as np
+import h5py
+from tqdm import tqdm
+from joblib import Parallel, delayed
+from tqdm_joblib import tqdm_joblib
+
+from . import utils
+
 
 def run():
-    for i in np.arange(10):
-        run1()
-        print(f"Run {i + 1} completed.")
+    N_halos = 10
+    halo_mass_all, halo_mass_rate_all, redshift_all = utils.read_trees_dummy(N_halos)
 
-    dir_out = "./data/outputs/"
-    np.savez(
-        dir_out + f"first_{Ntest}.npz",
-        gas_mass=gas_mass,
-        stars_mass=stars_mass,
-        gas_metals=gas_metals,
-        stars_metals=stars_metals,
-    )
+    with tqdm_joblib(tqdm(desc="Running halos", total=N_halos)):
+        results = Parallel(n_jobs=-1)(
+            delayed(run1)(halo_mass_all[i], halo_mass_rate_all[i], redshift_all[i])
+            for i in range(N_halos)
+        )
 
-    import matplotlib.pyplot as plt
+    # Combine all properties across halos
+    keys = results[0].keys()
+    combined = {key: np.stack([res[key] for res in results], axis=0) for key in keys}
 
-    plt.plot(cosmic_time, halo_mass, label="halo_mass")
-    plt.plot(cosmic_time, halo_mass_rate, label="halo_mass_rate")
-    plt.plot(cosmic_time, gas_mass, label="gas_mass")
-    plt.plot(cosmic_time, stars_mass, label="stars_mass")
-    plt.plot(cosmic_time, sfr, label="sfr")
-    plt.plot(cosmic_time, gas_metals, label="gas_metals")
-    plt.plot(cosmic_time, stars_metals, label="stars_metals")
-    plt.yscale("log")
-    plt.legend()
-    plt.show()
+    # Output file
+    output_file = "./data/outputs/halos_combined.hdf5"
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
+    with h5py.File(output_file, "w") as f:
+        # Save common 1D arrays at the root
+        f.create_dataset("cosmic_time", data=results[0]["cosmic_time"])
+        f.create_dataset("redshift", data=results[0]["redshift"])
+
+        # Group for halo properties
+        grp = f.create_group("mass_bin_1e6")
+        for key, val in combined.items():
+            if key not in ["cosmic_time", "redshift"]:
+                grp.create_dataset(key, data=val)
+
+    print(f"Saved outputs to {output_file}")

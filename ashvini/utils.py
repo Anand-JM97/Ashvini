@@ -19,6 +19,18 @@ def read_trees():
     return np.asarray(m_halo), np.asarray(halo_accretion_rate), np.asarray(redshift)
 
 
+def read_trees_dummy(N_halos=10):
+    # Read the original single-halo data
+    m_halo, halo_accretion_rate, redshift = read_trees()
+
+    # Stack the single-halo data N_halos times to create dummy inputs
+    m_halo_all = np.tile(m_halo, (N_halos, 1))  # shape (N_halos, time)
+    halo_accretion_rate_all = np.tile(halo_accretion_rate, (N_halos, 1))
+    redshift_all = np.tile(redshift, (N_halos, 1))
+
+    return m_halo_all, halo_accretion_rate_all, redshift_all
+
+
 # --- Precompute time and redshift interpolation ---
 _z_vals = np.linspace(0, 50, 10000)
 _t_vals = cosmo.age(_z_vals).value  # Gyr
