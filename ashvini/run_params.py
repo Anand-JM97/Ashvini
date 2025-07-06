@@ -46,7 +46,7 @@ class Params:
     io: IOParams
 
 
-def load_params(verbose=True) -> Params:
+def load_params() -> Params:
     root = Path(__file__).resolve().parents[1]
     config_file = root / "run_params.yaml"
     raw = yaml.safe_load(config_file.read_text())

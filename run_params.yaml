@@ -1,3 +1,8 @@
+basics:
+  mass_bin: 1e07
+  tree_file: "./data/inputs/merger_trees.h5"
+  dir_out: "./data/outputs/"
+
 star_formation:
   efficiency: 0.015
 
