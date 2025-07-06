@@ -4,6 +4,13 @@ import yaml
 
 
 @dataclass
+class IOParams:
+    mass_bin: float
+    tree_file: str
+    dir_out: str
+
+
+@dataclass
 class StarFormationParams:
     efficiency: float
 

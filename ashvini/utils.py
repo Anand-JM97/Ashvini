@@ -1,4 +1,5 @@
 import numpy as np
+import h5py
 from astropy.cosmology import Planck18 as cosmo
 import astropy.units as u
 
@@ -9,26 +10,31 @@ Omega_b = cosmo.Ob0
 Omega_L = cosmo.Ode0
 
 
-def read_trees():
-    dir_name = "./data/inputs/"
+def read_trees(file_path, mass_bin):
+    """
+    Reads halo masses, halo growth rates, and redshifts for a mass bin.
 
-    m_halo = np.loadtxt(dir_name + "halo_mass_0.txt", usecols=(0,))
-    halo_accretion_rate = np.loadtxt(dir_name + "halo_mass_rate_0.txt", usecols=(0,))
-    redshift = np.loadtxt(dir_name + "redshifts.txt", usecols=(0,))
+    Parameters:
+    - h5_file_path: str, path to the HDF5 file
+    - mass_bin_float: float, e.g., 1e6, 5e7
 
-    return np.asarray(m_halo), np.asarray(halo_accretion_rate), np.asarray(redshift)
+    Returns:
+    - m_halo: np.ndarray
+    - halo_accretion_rate: np.ndarray
+    - redshift: np.ndarray
+    """
+    mass_bin = float(mass_bin)
+    exponent = int(np.log10(mass_bin))
+    mantissa = int(mass_bin / 10**exponent)
+    group_name = f"{mantissa:02d}e{exponent:02d}"
 
+    with h5py.File(file_path, "r") as f:
+        group = f[group_name]
+        m_halo = group["halo_masses"][:]
+        halo_accretion_rate = group["halo_growth_rates"][:]
+        redshift = f["redshifts"][:]
 
-def read_trees_dummy(N_halos=10):
-    # Read the original single-halo data
-    m_halo, halo_accretion_rate, redshift = read_trees()
-
-    # Stack the single-halo data N_halos times to create dummy inputs
-    m_halo_all = np.tile(m_halo, (N_halos, 1))  # shape (N_halos, time)
-    halo_accretion_rate_all = np.tile(halo_accretion_rate, (N_halos, 1))
-    redshift_all = np.tile(redshift, (N_halos, 1))
-
-    return m_halo_all, halo_accretion_rate_all, redshift_all
+    return m_halo, halo_accretion_rate, redshift
 
 
 # --- Precompute time and redshift interpolation ---

@@ -24,16 +24,7 @@ tiny = 1e-15  # small number for numerical gymnastics...
 method = "LSODA"
 
 
-halo_mass, halo_mass_rate, redshift = utils.read_trees()
-
-
-def run1(halo_mass=halo_mass, halo_mass_rate=halo_mass_rate, redshift=redshift):
-    # TODO: Taking only the first Ntest values for testing
-    Ntest = len(redshift)
-    halo_mass = halo_mass[:Ntest]
-    halo_mass_rate = halo_mass_rate[:Ntest]
-    redshift = redshift[:Ntest]
-
+def run1(halo_mass, halo_mass_rate, redshift):
     cosmic_time = utils.time_at_z(redshift)  # Gyr
     tsn = cosmic_time[0] + t_d  # Supernova switch-on time
 
@@ -129,11 +120,16 @@ def run1(halo_mass=halo_mass, halo_mass_rate=halo_mass_rate, redshift=redshift):
         stars_mass[j] = max(stars_mass[j], 0.0)
         stars_metals[j] = max(stars_metals[j], 0.0)
 
+        # Gas metallicity
+        if gas_mass[j] <= 0:
+            gas_metals[j] = 0.0
+
         # Stellar metallicity
         if stars_mass[j] > 0:
             stellar_metallicity[j] = stars_metals[j] / stars_mass[j]
         else:
             stellar_metallicity[j] = 0.0
+            stars_metals[j] = 0.0
 
     return {
         "gas_mass": gas_mass,
@@ -192,9 +188,14 @@ def run():
     N_halos = 10
     halo_mass_all, halo_mass_rate_all, redshift_all = utils.read_trees_dummy(N_halos)
 
+    halo_masses, halo_mass_rates, redshifts = utils.read_trees(
+        file_path=PARAMS.io.tree_file, mass_bin=PARAMS.io.mass_bin
+    )
+
+    N_halos = np.shape(halo_masses)[0]
     with tqdm_joblib(tqdm(desc="Running halos", total=N_halos)):
         results = Parallel(n_jobs=-1)(
-            delayed(run1)(halo_mass_all[i], halo_mass_rate_all[i], redshift_all[i])
+            delayed(run1)(halo_masses[i], halo_mass_rates[i], redshifts)
             for i in range(N_halos)
         )
 
@@ -203,7 +204,7 @@ def run():
     combined = {key: np.stack([res[key] for res in results], axis=0) for key in keys}
 
     # Output file
-    output_file = "./data/outputs/halos_combined.hdf5"
+    output_file = PARAMS.io.dir_out + f"mass_bin_{PARAMS.io.mass_bin}.hdf5"
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
     with h5py.File(output_file, "w") as f:
@@ -212,7 +213,7 @@ def run():
         f.create_dataset("redshift", data=results[0]["redshift"])
 
         # Group for halo properties
-        grp = f.create_group("mass_bin_1e6")
+        grp = f.create_group(f"mass_bin_{PARAMS.io.mass_bin}")
         for key, val in combined.items():
             if key not in ["cosmic_time", "redshift"]:
                 grp.create_dataset(key, data=val)
