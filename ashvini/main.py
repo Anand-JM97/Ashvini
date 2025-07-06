@@ -1,8 +1,11 @@
+import os
 import numpy as np
+import h5py
+
 from scipy.integrate import solve_ivp
 
-import h5py
 from tqdm import tqdm
+
 from joblib import Parallel, delayed
 from tqdm_joblib import tqdm_joblib
 
@@ -11,6 +14,7 @@ from . import utils as utils
 from .star_formation import star_formation_rate
 from .gas_evolve import gas_inflow_rate, update_gas_reservoir
 from .metallicity import evolve_gas_metals, evolve_stars_metals
+
 
 from .run_params import PARAMS, print_config
 
@@ -142,46 +146,6 @@ def run1(halo_mass, halo_mass_rate, redshift):
         "halo_mass_rate": halo_mass_rate,
         "redshift": redshift,
     }
-
-
-# def run():
-#     for i in np.arange(10):
-#         run1()
-#         print(f"Run {i + 1} completed.")
-#
-#     dir_out = "./data/outputs/"
-#     np.savez(
-#         dir_out + f"first_{Ntest}.npz",
-#         gas_mass=gas_mass,
-#         stars_mass=stars_mass,
-#         gas_metals=gas_metals,
-#         stars_metals=stars_metals,
-#     )
-#
-#     import matplotlib.pyplot as plt
-#
-#     plt.plot(cosmic_time, halo_mass, label="halo_mass")
-#     plt.plot(cosmic_time, halo_mass_rate, label="halo_mass_rate")
-#     plt.plot(cosmic_time, gas_mass, label="gas_mass")
-#     plt.plot(cosmic_time, stars_mass, label="stars_mass")
-#     plt.plot(cosmic_time, sfr, label="sfr")
-#     plt.plot(cosmic_time, gas_metals, label="gas_metals")
-#     plt.plot(cosmic_time, stars_metals, label="stars_metals")
-#     plt.yscale("log")
-#     plt.legend()
-#     plt.show()
-
-from joblib import Parallel, delayed
-import os
-
-import os
-import numpy as np
-import h5py
-from tqdm import tqdm
-from joblib import Parallel, delayed
-from tqdm_joblib import tqdm_joblib
-
-from . import utils
 
 
 def run():
