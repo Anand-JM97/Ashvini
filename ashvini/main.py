@@ -12,7 +12,7 @@ from .star_formation import star_formation_rate
 from .gas_evolve import gas_inflow_rate, update_gas_reservoir
 from .metallicity import evolve_gas_metals, evolve_stars_metals
 
-from .run_params import PARAMS
+from .run_params import PARAMS, print_config
 
 UV_background = PARAMS.reion.UVB_enabled
 t_d = PARAMS.sn.delay_time  # delay time for SNe feedback, in Gyr
@@ -185,8 +185,7 @@ from . import utils
 
 
 def run():
-    N_halos = 10
-    halo_mass_all, halo_mass_rate_all, redshift_all = utils.read_trees_dummy(N_halos)
+    print_config(PARAMS)
 
     halo_masses, halo_mass_rates, redshifts = utils.read_trees(
         file_path=PARAMS.io.tree_file, mass_bin=PARAMS.io.mass_bin
