@@ -1,18 +1,26 @@
+import os
 import numpy as np
-from . import utils as utils
+import h5py
+
 from scipy.integrate import solve_ivp
 
-from .run_params import PARAMS
+from tqdm import tqdm
 
-UV_background = PARAMS.reion.UVB_enabled
-t_d = PARAMS.sn.delay_time  # delay time for SNe feedback, in Gyr
-sn_type = PARAMS.sn.type  # type of supernova feedback
+from joblib import Parallel, delayed
+from tqdm_joblib import tqdm_joblib
 
-from .utils import read_trees
+from . import utils as utils
 
 from .star_formation import star_formation_rate
 from .gas_evolve import gas_inflow_rate, update_gas_reservoir
 from .metallicity import evolve_gas_metals, evolve_stars_metals
+
+
+from .run_params import PARAMS, print_config
+
+UV_background = PARAMS.reion.UVB_enabled
+t_d = PARAMS.sn.delay_time  # delay time for SNe feedback, in Gyr
+sn_type = PARAMS.sn.type  # type of supernova feedback
 
 
 tiny = 1e-15  # small number for numerical gymnastics...
@@ -20,15 +28,7 @@ tiny = 1e-15  # small number for numerical gymnastics...
 method = "LSODA"
 
 
-def run():
-    halo_mass, halo_mass_rate, redshift = read_trees()
-
-    # TODO: Taking only the first Ntest values for testing
-    Ntest = len(redshift)
-    halo_mass = halo_mass[:Ntest]
-    halo_mass_rate = halo_mass_rate[:Ntest]
-    redshift = redshift[:Ntest]
-
+def run1(halo_mass, halo_mass_rate, redshift):
     cosmic_time = utils.time_at_z(redshift)  # Gyr
     tsn = cosmic_time[0] + t_d  # Supernova switch-on time
 
@@ -48,7 +48,6 @@ def run():
     delay_counter = None
 
     for j in range(1, n):
-        print(j)
         t_span = [cosmic_time[j - 1], cosmic_time[j]]
 
         if cosmic_time[j] <= tsn:
@@ -87,7 +86,10 @@ def run():
         stars_mass[j] = sol.y[0, -1]
 
         # Update gas metals
-        sfr_input = sfr[j - 1] if cosmic_time[j] <= tsn else sfr[j - 1 - delay_counter]
+        if cosmic_time[j] <= tsn:
+            sfr_input = sfr[j - 1]
+        else:
+            sfr_input = sfr[j - 1 - delay_counter]
         sol = solve_ivp(
             evolve_gas_metals,
             t_span,
@@ -122,30 +124,61 @@ def run():
         stars_mass[j] = max(stars_mass[j], 0.0)
         stars_metals[j] = max(stars_metals[j], 0.0)
 
+        # Gas metallicity
+        if gas_mass[j] <= 0:
+            gas_metals[j] = 0.0
+
         # Stellar metallicity
         if stars_mass[j] > 0:
             stellar_metallicity[j] = stars_metals[j] / stars_mass[j]
         else:
             stellar_metallicity[j] = 0.0
+            stars_metals[j] = 0.0
 
-    dir_out = "./data/outputs/"
-    np.savez(
-        dir_out + f"first_{Ntest}.npz",
-        gas_mass=gas_mass,
-        stars_mass=stars_mass,
-        gas_metals=gas_metals,
-        stars_metals=stars_metals,
+    return {
+        "gas_mass": gas_mass,
+        "stars_mass": stars_mass,
+        "gas_metals": gas_metals,
+        "stars_metals": stars_metals,
+        "sfr": sfr,
+        "cosmic_time": cosmic_time,
+        "halo_mass": halo_mass,
+        "halo_mass_rate": halo_mass_rate,
+        "redshift": redshift,
+    }
+
+
+def run():
+    print_config(PARAMS)
+
+    halo_masses, halo_mass_rates, redshifts = utils.read_trees(
+        file_path=PARAMS.io.tree_file, mass_bin=PARAMS.io.mass_bin
     )
 
-    import matplotlib.pyplot as plt
+    N_halos = np.shape(halo_masses)[0]
+    with tqdm_joblib(tqdm(desc="Running halos", total=N_halos)):
+        results = Parallel(n_jobs=-1)(
+            delayed(run1)(halo_masses[i], halo_mass_rates[i], redshifts)
+            for i in range(N_halos)
+        )
 
-    plt.plot(cosmic_time, halo_mass, label="halo_mass")
-    plt.plot(cosmic_time, halo_mass_rate, label="halo_mass_rate")
-    plt.plot(cosmic_time, gas_mass, label="gas_mass")
-    plt.plot(cosmic_time, stars_mass, label="stars_mass")
-    plt.plot(cosmic_time, sfr, label="sfr")
-    plt.plot(cosmic_time, gas_metals, label="gas_metals")
-    plt.plot(cosmic_time, stars_metals, label="stars_metals")
-    plt.yscale("log")
-    plt.legend()
-    plt.show()
+    # Combine all properties across halos
+    keys = results[0].keys()
+    combined = {key: np.stack([res[key] for res in results], axis=0) for key in keys}
+
+    # Output file
+    output_file = PARAMS.io.dir_out + f"mass_bin_{PARAMS.io.mass_bin}.hdf5"
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
+    with h5py.File(output_file, "w") as f:
+        # Save common 1D arrays at the root
+        f.create_dataset("cosmic_time", data=results[0]["cosmic_time"])
+        f.create_dataset("redshift", data=results[0]["redshift"])
+
+        # Group for halo properties
+        grp = f.create_group(f"mass_bin_{PARAMS.io.mass_bin}")
+        for key, val in combined.items():
+            if key not in ["cosmic_time", "redshift"]:
+                grp.create_dataset(key, data=val)
+
+    print(f"Saved outputs to {output_file}")

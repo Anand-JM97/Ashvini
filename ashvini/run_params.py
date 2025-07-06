@@ -4,6 +4,13 @@ import yaml
 
 
 @dataclass
+class IOParams:
+    mass_bin: float
+    tree_file: str
+    dir_out: str
+
+
+@dataclass
 class StarFormationParams:
     efficiency: float
 
@@ -36,6 +43,7 @@ class Params:
     sn: SupernovaParams
     reion: ReionizationParams
     metals: MetalsParams
+    io: IOParams
 
 
 def load_params() -> Params:
@@ -48,19 +56,21 @@ def load_params() -> Params:
         sn=SupernovaParams(**raw["supernova"]),
         reion=ReionizationParams(**raw["reionization"]),
         metals=MetalsParams(**raw["metallicity"]),
+        io=IOParams(**raw["basics"]),
     )
-    print("\n Loaded simulation parameters:")
-    print_config(params)
 
     return params
 
 
 def print_config(params: Params):
+    print("\n Loaded simulation parameters:\n")
+
     def section(title, d):
         print(f"\n[{title}]")
         for k, v in d.items():
             print(f"  {k:<16} : {v}")
 
+    section("Basics", asdict(params.io))
     section("Star Formation", asdict(params.sf))
     section("Supernova Feedback", asdict(params.sn))
     section("Reionization", asdict(params.reion))
