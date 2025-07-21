@@ -181,4 +181,4 @@ def run():
             if key not in ["cosmic_time", "redshift"]:
                 grp.create_dataset(key, data=val)
 
-    print(f"Saved outputs to {output_file}")
+    tqdm.write(f"Saved outputs to {output_file}")

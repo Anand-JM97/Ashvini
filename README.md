@@ -20,6 +20,17 @@ Simply clone the repository using the following command:
 git clone https://github.com/Anand-JM97/Ashvini.git
 ```
 
+The following standard Python packages are required to run the model:
+
+* numpy
+* scipy
+* h5py
+* joblib (to process haloes in parallel)
+* tqdm
+* tqdm_joblib
+
+All of the above are pip installable.
+
 ### Usage
 
 As a user, you only need to change the parameters in the `run_params.yaml` file. Afterwards, run the model as:
