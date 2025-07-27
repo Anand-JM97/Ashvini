@@ -7,7 +7,9 @@ star_formation:
   efficiency: 0.015
 
 supernova:
-  type: "delayed" # or instantaneous or no
+  # type: "no" # "instantaneous", "no", "delayed" 
+  # type: "delayed" # "instantaneous", "no", "delayed" 
+  type: "instantaneous" # "instantaneous", "no", "delayed" 
   delay_time: 0.015 #Gyr
   epsilon_p: 5
   pi_fid: 1
@@ -21,3 +23,9 @@ reionization:
 metallicity:
   Z_IGM: 1.0e-3 #Z_solar units
   Z_yield: 0.06
+
+dust:
+  m_swept: 1.0e+3 #Swept-up mass in SNe; epsilon_d x M_ISM
+  dust_yield: 0.004
+  dust_gamma: 1.3e-4
+  m_crit: 1.0e+5
