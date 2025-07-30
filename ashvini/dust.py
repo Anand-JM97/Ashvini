@@ -18,7 +18,7 @@ def update_dust_reservoir(
     gas_mass,
     halo_mass,
     past_sfr,
-    past_gas_mass,
+    past_stars_mass,
     stellar_metallicity,
 ):
     growth_rate = Y_d * past_sfr
@@ -26,12 +26,11 @@ def update_dust_reservoir(
     if past_sfr <= 0:
         SNe_rate = 0.0
     else:
-        SNe_rate = Gamma * past_gas_mass / past_sfr
+        SNe_rate = Gamma * past_stars_mass / past_sfr
     dust_loading = 1 - np.exp(-gas_mass / M_crit)
     destruction_rate = M_swept * SNe_rate * dust_loading
 
     redshift = utils.z_at_time(t)
-    present_sfr = star_formation_rate(t, gas_mass=gas_mass)
 
     if gas_mass <= 0:
         wind_loss = 0.0
@@ -39,7 +38,7 @@ def update_dust_reservoir(
         wind_loss = (
             (dust_mass / gas_mass)
             * sn.mass_loading_factor(redshift, halo_mass, stellar_metallicity)
-            * present_sfr
+            * past_sfr
         )
 
     dust_mass_evolution_rate = growth_rate - destruction_rate - wind_loss

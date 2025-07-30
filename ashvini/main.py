@@ -125,8 +125,8 @@ def run1(halo_mass, halo_mass_rate, redshift):
                 gas_mass[j - 1],
                 halo_mass[j - 1],
                 sfr[j - 1 - delay_counter],
-                gas_mass[j - 1 - delay_counter],
-                stars_mass[j - 1],
+                stars_mass[j - 1 - delay_counter] - stars_mass[j - 2 - delay_counter],
+                stars_metals[j - 1],
             ),
         )
         dust_mass[j] = sol.y[0, -1]
