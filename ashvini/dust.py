@@ -8,6 +8,7 @@ from .run_params import PARAMS
 
 Y_d = PARAMS.dust.dust_yield
 Gamma = PARAMS.dust.dust_gamma
+Alpha = PARAMS.dust.dust_alpha
 M_crit = PARAMS.dust.m_crit
 M_swept = PARAMS.dust.m_swept
 
@@ -23,11 +24,13 @@ def update_dust_reservoir(
 ):
     growth_rate = Y_d * past_sfr
 
-    if past_sfr <= 0:
+    # past_stars_mass = abs(past_stars_mass)  # Ensure past_stars_mass is non-negative
+    if past_stars_mass <= 0:
         SNe_rate = 0.0
     else:
-        SNe_rate = Gamma * past_stars_mass / past_sfr
-    dust_loading = 1 - np.exp(-gas_mass / M_crit)
+        SNe_rate = Gamma * past_sfr / past_stars_mass
+
+    dust_loading = 1 - np.exp(-((gas_mass / M_crit) ** Alpha))
     destruction_rate = M_swept * SNe_rate * dust_loading
 
     redshift = utils.z_at_time(t)

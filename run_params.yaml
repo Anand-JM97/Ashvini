@@ -1,5 +1,5 @@
 basics:
-  mass_bin: 1e07
+  mass_bin: 1e10
   tree_file: "./data/inputs/merger_trees.h5"
   dir_out: "./data/outputs/"
 
@@ -8,8 +8,8 @@ star_formation:
 
 supernova:
   # type: "no" # "instantaneous", "no", "delayed" 
-  # type: "delayed" # "instantaneous", "no", "delayed" 
-  type: "instantaneous" # "instantaneous", "no", "delayed" 
+  type: "delayed" # "instantaneous", "no", "delayed" 
+  # type: "instantaneous" # "instantaneous", "no", "delayed" 
   delay_time: 0.015 #Gyr
   epsilon_p: 5
   pi_fid: 1
@@ -28,4 +28,5 @@ dust:
   m_swept: 1.0e+3 #Swept-up mass in SNe; epsilon_d x M_ISM
   dust_yield: 0.004
   dust_gamma: 1.3e-4
+  dust_alpha: 8
   m_crit: 1.0e+5

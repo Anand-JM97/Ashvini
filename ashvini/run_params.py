@@ -42,6 +42,7 @@ class DustParams:
     m_swept: float
     dust_yield: float
     dust_gamma: float
+    dust_alpha: float
     m_crit: float
 
 

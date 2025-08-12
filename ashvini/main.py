@@ -141,9 +141,10 @@ def run1(halo_mass, halo_mass_rate, redshift):
         stars_metals[j] = max(stars_metals[j], 0.0)
         dust_mass[j] = max(dust_mass[j], 0.0)
 
-        # Gas metallicity
+        # No gas metals or dust if no gas
         if gas_mass[j] <= 0:
             gas_metals[j] = 0.0
+            dust_mass[j] = 0.0
 
         # Stellar metallicity
         if stars_mass[j] > 0:
