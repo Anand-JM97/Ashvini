@@ -38,12 +38,22 @@ class MetalsParams:
 
 
 @dataclass
+class DustParams:
+    m_swept: float
+    dust_yield: float
+    dust_gamma: float
+    dust_alpha: float
+    m_crit: float
+
+
+@dataclass
 class Params:
+    io: IOParams
     sf: StarFormationParams
     sn: SupernovaParams
     reion: ReionizationParams
     metals: MetalsParams
-    io: IOParams
+    dust: DustParams
 
 
 def load_params() -> Params:
@@ -52,11 +62,12 @@ def load_params() -> Params:
     raw = yaml.safe_load(config_file.read_text())
 
     params = Params(
+        io=IOParams(**raw["basics"]),
         sf=StarFormationParams(**raw["star_formation"]),
         sn=SupernovaParams(**raw["supernova"]),
         reion=ReionizationParams(**raw["reionization"]),
         metals=MetalsParams(**raw["metallicity"]),
-        io=IOParams(**raw["basics"]),
+        dust=DustParams(**raw["dust"]),
     )
 
     return params
@@ -75,6 +86,7 @@ def print_config(params: Params):
     section("Supernova Feedback", asdict(params.sn))
     section("Reionization", asdict(params.reion))
     section("Metals", asdict(params.metals))
+    section("Dust", asdict(params.dust))
 
 
 PARAMS = load_params()

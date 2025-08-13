@@ -14,7 +14,7 @@ from . import utils as utils
 from .star_formation import star_formation_rate
 from .gas_evolve import gas_inflow_rate, update_gas_reservoir
 from .metallicity import evolve_gas_metals, evolve_stars_metals
-
+from .dust import update_dust_reservoir
 
 from .run_params import PARAMS, print_config
 
@@ -39,7 +39,7 @@ def run1(halo_mass, halo_mass_rate, redshift):
     stars_metals = np.zeros(n)
     sfr = np.zeros(n)
     stellar_metallicity = np.zeros(n)
-    # dust_mass = np.zeros(n)
+    dust_mass = np.zeros(n)
 
     gas_accretion_rate = gas_inflow_rate(
         redshift, halo_mass, halo_mass_rate, UV_background
@@ -115,6 +115,22 @@ def run1(halo_mass, halo_mass_rate, redshift):
         )
         stars_metals[j] = sol.y[0, -1]
 
+        # Update dust mass
+        sol = solve_ivp(
+            update_dust_reservoir,
+            t_span,
+            [dust_mass[j - 1]],
+            method=method,
+            args=(
+                gas_mass[j - 1],
+                halo_mass[j - 1],
+                sfr[j - 1 - delay_counter],
+                stars_mass[j - 1 - delay_counter] - stars_mass[j - 2 - delay_counter],
+                stars_metals[j - 1],
+            ),
+        )
+        dust_mass[j] = sol.y[0, -1]
+
         # Star formation rate at current time
         sfr[j] = star_formation_rate(cosmic_time[j], gas_mass[j])
 
@@ -123,10 +139,12 @@ def run1(halo_mass, halo_mass_rate, redshift):
         gas_metals[j] = max(gas_metals[j], 0.0)
         stars_mass[j] = max(stars_mass[j], 0.0)
         stars_metals[j] = max(stars_metals[j], 0.0)
+        dust_mass[j] = max(dust_mass[j], 0.0)
 
-        # Gas metallicity
+        # No gas metals or dust if no gas
         if gas_mass[j] <= 0:
             gas_metals[j] = 0.0
+            dust_mass[j] = 0.0
 
         # Stellar metallicity
         if stars_mass[j] > 0:
@@ -140,6 +158,7 @@ def run1(halo_mass, halo_mass_rate, redshift):
         "stars_mass": stars_mass,
         "gas_metals": gas_metals,
         "stars_metals": stars_metals,
+        "dust_mass": dust_mass,
         "sfr": sfr,
         "cosmic_time": cosmic_time,
         "halo_mass": halo_mass,
@@ -167,7 +186,7 @@ def run():
     combined = {key: np.stack([res[key] for res in results], axis=0) for key in keys}
 
     # Output file
-    output_file = PARAMS.io.dir_out + f"mass_bin_{PARAMS.io.mass_bin}.hdf5"
+    output_file = PARAMS.io.dir_out + f"mass_bin_{PARAMS.io.mass_bin}_{sn_type}.hdf5"
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
     with h5py.File(output_file, "w") as f:
