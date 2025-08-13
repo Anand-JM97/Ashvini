@@ -49,4 +49,4 @@ For more information about the model, please refer to (and kindly cite!) the fol
 
 1. Menon & Power 2024, **On bursty star formation during cosmological reionisation – how does it influence the baryon mass content of dark matter halos?**, _Publications of the Astronomical Society of Australia_, 41, id.e049, 11 pp. [DOI:
 10.1017/pasa.2024.39](https://ui.adsabs.harvard.edu/abs/2024PASA...41...49M/abstract)
-1. Menon, Balu & Power 2025, **On bursty star formation during cosmological reionization -- influence on the metal and dust content of low-mass galaxies**, submitted to _Publications of the Astronomical Society of Australia_, [arxiv link]()
+1. Menon, Balu & Power 2025, **On bursty star formation during cosmological reionization -- influence on the metal and dust content of low-mass galaxies**, submitted to _Publications of the Astronomical Society of Australia_, [arxiv link](https://arxiv.org/abs/2508.08363)
