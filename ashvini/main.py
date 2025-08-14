@@ -7,7 +7,7 @@ from scipy.integrate import solve_ivp
 from tqdm import tqdm
 
 from joblib import Parallel, delayed
-from tqdm_joblib import tqdm_joblib
+from .utils import tqdm_joblib
 
 from . import utils as utils
 

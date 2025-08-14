@@ -27,7 +27,6 @@ The following standard Python packages are required to run the model:
 * h5py
 * joblib (to process haloes in parallel)
 * tqdm
-* tqdm_joblib
 
 All of the above are pip installable.
 
